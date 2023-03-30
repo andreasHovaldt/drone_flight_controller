@@ -40,6 +40,7 @@ m3_vec = [0;0;motor_forces(3)];
 m4_vec = [0;0;motor_forces(4)];
 local_motor_forces = [m1_vec m2_vec m3_vec m4_vec];
 
+%finding the absolute tourques of each motor 
 motor_torques = rpm2torque(motor_rpm);
 
 tau2m1 = [0;0;-motor_torques(1)];
@@ -47,7 +48,7 @@ tau2m2 = [0;0; motor_torques(2)];
 tau2m3 = [0;0;-motor_torques(3)];
 tau2m4 = [0;0; motor_torques(4)];
 
-local_motor_torques = [tau2m1  t
+local_motor_torques = [tau2m1 tau2m2 tau2m3 tau2m4];
 
 % Local inertia tensor
 I_local = [1.132869584e-05 0 0; 0 1.132869584e-05 0; 0 0 2.028869584e-05];
@@ -70,14 +71,14 @@ I_global = (R * I_local) * transpose(R);
 total_force = R * sum(local_motor_forces,2) + (body_mass * g_constant);
 
 % Total moment
-total_moment = R * sum(cross(s_vectors,local_motor_forces),2);
+total_moment = R * sum(cross(s_vectors,local_motor_forces),2)+sum(local_motor_torques,2);
 
 %% Linear and angular acceleration
 a = total_force/body_mass;
-lin_acc = [a(1) a(2) a(3)]
+lin_acc = [a(1) a(2) a(3)];
 
 alpha = inv(I_global) * (total_moment - cross(omega,(I_global * omega)));
-ang_acc = [alpha(1) alpha(2) alpha(3)]
+ang_acc = [alpha(1) alpha(2) alpha(3)];
 % omega = angular velocity
 % alpha = angular acceleration
 end

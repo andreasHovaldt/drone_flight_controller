@@ -1,6 +1,6 @@
 function [lin_acc, ang_acc] = quad_dynamics(motor_rpm, rpy, omega)
 
-
+%constanst to find the motor torques 
 C_Q = 0.024;
 
 air_density = 1.293; %kg/m^3
@@ -9,6 +9,7 @@ propeller_radius = 0.045/2; %m
  
 disc_area = pi*propeller_radius^2;% - pi*0.002^2
 
+%functions to find motor thrust and torque from rpm 
 syms rpm
 rpm2torque(rpm) = air_density * C_Q * disc_area * propeller_radius^3 * (rpm*0.1047198)^2;
 
@@ -40,13 +41,15 @@ m3_vec = [0;0;motor_forces(3)];
 m4_vec = [0;0;motor_forces(4)];
 local_motor_forces = [m1_vec m2_vec m3_vec m4_vec];
 
+%finding the absolute tourques of each motor 
 motor_torques = rpm2torque(motor_rpm);
 
+%change the minuses if it rotates in the wrong direction, they are just
+%random now
 tau2m1 = [0;0;-motor_torques(1)];
 tau2m2 = [0;0; motor_torques(2)];
 tau2m3 = [0;0;-motor_torques(3)];
 tau2m4 = [0;0; motor_torques(4)];
-
 local_motor_torques = [tau2m1 tau2m2 tau2m3 tau2m4];
 
 % Local inertia tensor
@@ -74,10 +77,10 @@ total_moment = R * sum(cross(s_vectors,local_motor_forces),2)+sum(local_motor_to
 
 %% Linear and angular acceleration
 a = total_force/body_mass;
-lin_acc = [a(1) a(2) a(3)]
+lin_acc = [a(1) a(2) a(3)];
 
 alpha = inv(I_global) * (total_moment - cross(omega,(I_global * omega)));
-ang_acc = [alpha(1) alpha(2) alpha(3)]
+ang_acc = [alpha(1) alpha(2) alpha(3)];
 % omega = angular velocity
 % alpha = angular acceleration
 end
