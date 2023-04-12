@@ -1,0 +1,7 @@
+﻿-IC:\Users\andre\OneDrive\Dokumenter\GitHub\drone_flight_controller\drone_flight_controller\work\codegen
+-IC:\Users\andre\OneDrive\Dokumenter\GitHub\drone_flight_controller\drone_flight_controller\work\codegen\drone_simulation_3D_ert_rtw
+-I"C:\Program Files\MATLAB\R2022b\extern\include"
+-I"C:\Program Files\MATLAB\R2022b\simulink\include"
+-I"C:\Program Files\MATLAB\R2022b\rtw\c\src"
+-I"C:\Program Files\MATLAB\R2022b\rtw\c\src\ext_mode\common"
+-I"C:\Program Files\MATLAB\R2022b\rtw\c\ert"
