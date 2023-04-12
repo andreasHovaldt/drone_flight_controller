@@ -23,7 +23,7 @@ s4 = [-cos(rotor_angle); sin(rotor_angle); 0] * rotor_dist;
 
 pause(1)
 
-for i = 1:100:length(out.XYZ)
+for i = 1:1000:length(out.XYZ)
     currentPos = out.XYZ(i,:);
     currentRPY = out.RPY(i,:);
 
