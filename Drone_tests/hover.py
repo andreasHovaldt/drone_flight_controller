@@ -45,10 +45,10 @@ logging.basicConfig(level=logging.ERROR)
 data_array = [[0,0,0,0,0,0]]
 def log_stab_callback(timestamp, data, logconf):
 
-    #print('[%d][%s]: %s' % (timestamp, logconf.name, data))
+    print('[%d][%s]: %s' % (timestamp, logconf.name, data))
     ts = float(timestamp)
     #print(np.mean(np.array([data["motor.m1"], data["motor.m2"], data["motor.m3"], data["motor.m4"]])))
-    data_array.append([ts, data["motor.m1"], data["motor.m2"], data["motor.m3"], data["motor.m4"], data["stateEstimate.az"]])
+    #data_array.append([ts, data["motor.m1"], data["motor.m2"], data["motor.m3"], data["motor.m4"], data["stateEstimate.az"]])
 
 
 
@@ -106,46 +106,20 @@ class Crazyflie_hover():
         # Unlock startup thrust protection
         self._cf.commander.send_setpoint(0, 0, 0, 0)
         counter = 0
-        simple_log_async(self._cf, lg_stab)
+        #simple_log_async(self._cf, lg_stab)
 
-        inner = data_array[-1]
-        bg_time = inner[0]
-        while inner[0]-bg_time < 100000000:
+        while counter < 1000:
             self._cf.commander.send_zdistance_setpoint(0,0,0,0.3)
-            inner = data_array[-1]
-            print(f"{inner[0]}-{bg_time} = {inner[0]-bg_time}")
-
-
-        inner = data_array[-1]
-        bg_time = inner[0]
-        while inner[0]-bg_time < 1000:
-            self._cf.commander.send_setpoint(0,0,0,int(thrust*1.2))
-            inner = data_array[-1]
-            #print("acc")
-
-
-        
-
-        inner = data_array[-1]
-        bg_time = inner[0]
-        while inner[0]-bg_time < 1000:
-            self._cf.commander.send_setpoint(0,0,0,int(thrust*0.7))
-            inner = data_array[-1]
-            #print(f"landing{counter}")
             counter += 1
-        
-        stop_log(lg_stab)
+            
+
+        #stop_log(lg_stab)
 
         self._cf.commander.send_setpoint(0, 0, 0, 0)
 
         # Make sure that the last packet leaves before the link is closed
         # since the message queue is not flushed before closing
         time.sleep(1)
-
-        np_data = np.array(data_array,dtype=object)
-        #print(np_data)
-        np.savetxt("thrust_step_data/data_test1.txt",np_data)
-        print("data saved")
 
         self._cf.close_link()
         

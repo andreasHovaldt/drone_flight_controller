@@ -106,35 +106,28 @@ class Crazyflie_hover():
         # Unlock startup thrust protection
         self._cf.commander.send_setpoint(0, 0, 0, 0)
         counter = 0
+
         simple_log_async(self._cf, lg_stab)
 
-        inner = data_array[-1]
-        bg_time = inner[0]
-        while inner[0]-bg_time < 100000000:
+
+        while counter < 700:
             self._cf.commander.send_zdistance_setpoint(0,0,0,0.3)
-            inner = data_array[-1]
-            print(f"{inner[0]}-{bg_time} = {inner[0]-bg_time}")
+            counter += 1
 
+        counter = 0
 
-        inner = data_array[-1]
-        bg_time = inner[0]
-        while inner[0]-bg_time < 1000:
+        while counter < 300:
             self._cf.commander.send_setpoint(0,0,0,int(thrust*1.2))
-            inner = data_array[-1]
-            #print("acc")
+            counter += 1
 
+        stop_log(lg_stab)
+        counter = 0
 
-        
-
-        inner = data_array[-1]
-        bg_time = inner[0]
-        while inner[0]-bg_time < 1000:
-            self._cf.commander.send_setpoint(0,0,0,int(thrust*0.7))
-            inner = data_array[-1]
-            #print(f"landing{counter}")
+        while counter < 1500:
+            self._cf.commander.send_setpoint(0,0,0,int(thrust*0.85))
             counter += 1
         
-        stop_log(lg_stab)
+
 
         self._cf.commander.send_setpoint(0, 0, 0, 0)
 
@@ -144,7 +137,7 @@ class Crazyflie_hover():
 
         np_data = np.array(data_array,dtype=object)
         #print(np_data)
-        np.savetxt("thrust_step_data/data_test1.txt",np_data)
+        np.savetxt("drone_flight_controller/Drone_tests/acc_test_data/data_test0.txt",np_data)
         print("data saved")
 
         self._cf.close_link()
