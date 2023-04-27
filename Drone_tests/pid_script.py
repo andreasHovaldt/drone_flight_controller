@@ -311,5 +311,5 @@ if __name__ == '__main__':
     with SyncCrazyflie(URI, cf) as scf:
         wait_for_position_estimator(scf)
         cf_ctrl= TunerControlCF(pid_gui,cf)
-        simple_log_async(scf, lg_stab)
+        #simple_log_async(scf, lg_stab)
         tk.mainloop()

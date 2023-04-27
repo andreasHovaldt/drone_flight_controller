@@ -27,7 +27,7 @@ class PID_control:
 
         integral = self.Ki * integration
 
-        self.prev_integration = integration
+        #self.prev_integration = integration
         
         diff = self.Kd * (error - self.prev_error)/self.Ts
         

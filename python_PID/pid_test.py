@@ -18,44 +18,44 @@ position = 0
 speed = 0
 int_pos = 0
 
-sim_time = 10000
+sim_time = 10
 
-data_array = np.zeros((6,sim_time))
+data_array = np.zeros((6,sim_time*1000))
 
 
 prev_int = 0 
 prev_error = 0
 time_step = 0.001
 
-my_PID = pid_control.PID_control(time_step, 2, 1, 10)
+my_PID = pid_control.PID_control(time_step, 6, 1, 10)
 
 acc2speed_integrator = Integrator(0,time_step)
 speed2pos_integrator = Integrator(0,time_step)
 
 #testing the pid in a simulation 
-for clock_ms in range(sim_time):
+for clock_ms in np.arange(0,sim_time,time_step):
     
-    data_array[0, clock_ms] = clock_ms
-    time_step = 0.001
+    data_array[0, int(clock_ms*1000)] = clock_ms
+    
     ref = 1#sin(clock_ms*0.001)
-    data_array[5,clock_ms] = ref
+    data_array[5,int(clock_ms*1000)] = ref
 
     
     error = ref-position
     force = my_PID.update(error)
 
-    data_array[4,clock_ms] = force
+    data_array[4,int(clock_ms*1000)] = force
     acc = dynamic_function(force)
     
-    data_array[1, clock_ms] = acc 
+    data_array[1, int(clock_ms*1000)] = acc 
 
 
     speed = acc2speed_integrator.intgrate(acc)
     
-    data_array[2,clock_ms] = speed
+    data_array[2,int(clock_ms*1000)] = speed
 
     position = speed2pos_integrator.intgrate(speed)
-    data_array[3, clock_ms] = position
+    data_array[3, int(clock_ms*1000)] = position
 
 
     print(f"{(clock_ms+1)*100/sim_time}%")
