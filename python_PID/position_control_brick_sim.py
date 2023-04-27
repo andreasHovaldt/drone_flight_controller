@@ -2,24 +2,36 @@ import numpy as np #we always need tis gold
 import matplotlib.pyplot as plt 
 import pid_control
 from discrete_integrator import Integrator
+from trajectory_generation import Trajectory
 from math import sin
-time_step = 0.001 
-sim_time = 10000 #ms 
+time_step = 0.01 
+
 
 #start values 
-position = np.array([0, 0, 0])
+
+
+point_array = np.random.random((10,3))
+point_array[0] = [0,0,0]
+position = point_array[0]
 acceleration = np.array([0,0,0]) 
+print(point_array)
+
+brick_ref_trj = Trajectory(point_array)
+
+sim_time = brick_ref_trj.get_total_time()
+
+
 
 #we create the PID controlers for x y and z 
-x_pid = pid_control.PID_control(time_step, 11, 1, 10)
-y_pid = pid_control.PID_control(time_step, 12, 1, 10)
-z_pid = pid_control.PID_control(time_step, 13, 1, 10)
+x_pid = pid_control.PID_control(time_step, 110, 1, 100)
+y_pid = pid_control.PID_control(time_step, 120, 1, 100)
+z_pid = pid_control.PID_control(time_step, 130, 1, 100)
 
 #we create the integrators 
 acc_to_speed = Integrator(np.array([0,0,0]),time_step)
 speed_to_pos = Integrator(np.array([0,0,0]),time_step)
 
-data_array = data_array = np.zeros((8,sim_time))
+
 
 
 #temporarily we simulate the drone whith a dynamic function 
@@ -29,11 +41,18 @@ def brick_dynamics(thrust_vector):
     return acc_vector
 
 
-for clock_ms in range(sim_time):
-    ref = np.array([sin(clock_ms/1000),sin(clock_ms/1200),sin(clock_ms/1100)])
-    data_array[0,clock_ms] = clock_ms
+time_array = []
+
+ref_array = [] 
+
+pos_array = []
+
+
+for clock in np.arange(0,sim_time,time_step):
+    ref = brick_ref_trj.get_position(clock)
+    time_array.append(clock)
     
-    data_array[5:8,clock_ms] = ref.T
+    ref_array.append(ref.T)
 
     error = ref-position
     
@@ -48,23 +67,30 @@ for clock_ms in range(sim_time):
     speed = acc_to_speed.intgrate(acc)
     position = speed_to_pos.intgrate(speed)
 
-    data_array[1:4,clock_ms] = np.transpose(position)
-
-print(data_array)
+    pos_array.append(np.transpose(position))
 
 
-plt.plot(data_array[0,:], data_array[3,:])
-plt.plot(data_array[0,:], data_array[7,:])
+
+
+
+plt.plot(time_array, ref_array)
+plt.plot(time_array, pos_array)
 
 plt.show()
 
-pz = data_array[3,:]
-py = data_array[2,:]
-px = data_array[1,:]
+pos_array = np.array(pos_array)
+ref_array = np.array(ref_array)
 
-rz = data_array[7,:]
-ry = data_array[6,:]
-rx = data_array[5,:]
+
+print(ref_array.shape)
+
+pz = pos_array[:,2]
+py = pos_array[:,1]
+px = pos_array[:,0]
+
+rz = ref_array[:,2]
+ry = ref_array[:,1]
+rx = ref_array[:,0]
 
 ax = plt.figure().add_subplot(projection='3d')
 

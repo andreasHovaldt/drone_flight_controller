@@ -9,7 +9,7 @@ class PID_control:
         self.Ki = Ki 
         self.Kd = Kd
        
-        self.prev_integration = 0
+        
         self.simulations = 0
 
         self.error_int = Integrator(0,Ts)
@@ -27,7 +27,7 @@ class PID_control:
 
         integral = self.Ki * integration
 
-        self.prev_integration = integration
+        
         
         diff = self.Kd * (error - self.prev_error)/self.Ts
         

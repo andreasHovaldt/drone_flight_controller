@@ -3,6 +3,8 @@ import numpy as np #we always need tis gold
 import matplotlib.pyplot as plt 
 import pid_control
 from discrete_integrator import Integrator
+
+
 from math import sin
 
 
@@ -18,53 +20,60 @@ position = 0
 speed = 0
 int_pos = 0
 
-sim_time = 10000
+sim_time = 10
 
 data_array = np.zeros((6,sim_time))
 
 
 prev_int = 0 
 prev_error = 0
-time_step = 0.001
+time_step = 0.01
 
-my_PID = pid_control.PID_control(time_step, 2, 1, 10)
+my_PID = pid_control.PID_control(time_step, 20, 1, 10)
 
 acc2speed_integrator = Integrator(0,time_step)
 speed2pos_integrator = Integrator(0,time_step)
 
+
+data_array = []
+
+data_vector = []
+
 #testing the pid in a simulation 
-for clock_ms in range(sim_time):
-    
-    data_array[0, clock_ms] = clock_ms
-    time_step = 0.001
+for clock in np.arange(0,sim_time,time_step):
+    data_vector.append(clock)
     ref = 1#sin(clock_ms*0.001)
-    data_array[5,clock_ms] = ref
+    data_vector.append(ref)
 
     
     error = ref-position
     force = my_PID.update(error)
 
-    data_array[4,clock_ms] = force
+    data_vector.append(force)
     acc = dynamic_function(force)
     
-    data_array[1, clock_ms] = acc 
-
 
     speed = acc2speed_integrator.intgrate(acc)
     
-    data_array[2,clock_ms] = speed
-
     position = speed2pos_integrator.intgrate(speed)
-    data_array[3, clock_ms] = position
+    data_vector.append(position)
+    data_array.append(data_vector)
+    data_vector = []
 
-
-    print(f"{(clock_ms+1)*100/sim_time}%")
+    print(f"{(clock)*100/sim_time}%")
 
 
 
 #plt.plot(data_array[0,:], data_array[4,:]/100)
+
+
+data_array = np.transpose(np.array(data_array))
+print(data_array.shape)
+
+
+
+plt.plot(data_array[0,:], data_array[1,:])
 plt.plot(data_array[0,:], data_array[3,:])
-plt.plot(data_array[0,:], data_array[5,:])
 plt.grid()
 print(np.argmax(data_array[3,:]))
 
