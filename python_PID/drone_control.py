@@ -1,23 +1,39 @@
 import time
 
 
-import vicon_comunication
+import vicon_communication
 from pid_control import PID_control
 from discrete_integrator import Integrator
 
+# drone libraries
+import logging
+import time
+from threading import Thread
+
+import cflib
+from cflib.crazyflie import Crazyflie
+from cflib.utils import uri_helper
 
 
-ip = "172.26.51.222"
+# Drone connection
+uri = uri_helper.uri_from_env(default='radio://0/80/2M/E7E7E7E7E7')
+
+logging.basicConfig(level=logging.ERROR)
+
+
+
+# Vicon comm
+ip = "0.0.0.0"
 
 port = "51001"
 
-vicon_comunicator = vicon_comunication.viconUDP(ip,port)
+vicon_comunicator = vicon_communication.viconUDP(ip,port)
 
-time_step = 0.3
 
-z_pid = PID_control(time_step, 1, 1, 1)
 
-ref = 1
+z_pid = PID_control(0.1, 1, 0, 1)
+
+ref = 1000
 
 
 if __name__ == "__main__":
