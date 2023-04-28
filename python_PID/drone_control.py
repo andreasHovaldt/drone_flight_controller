@@ -6,6 +6,7 @@ from pid_control import PID_control
 from discrete_integrator import Integrator
 
 # drone libraries
+from drone_RPYT_control import Crazyflie_control
 import logging
 import time
 from threading import Thread
@@ -37,6 +38,8 @@ ref = 1000
 
 
 if __name__ == "__main__":
+    cflib.crtp.init_drivers()
+    drone = Crazyflie_control(link_uri=uri)
     data = vicon_comunicator.getTimestampedData()
     prev_time = data[0]
     while True:
@@ -45,6 +48,8 @@ if __name__ == "__main__":
         error = ref - data[3]
         time_step = time - prev_time
         thrust = z_pid.update(error, time_step)
+        print(thrust)
+        drone.send_commands(0,0,0,thrust)
         prev_time = time
         
 
