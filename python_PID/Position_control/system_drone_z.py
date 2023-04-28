@@ -2,11 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pid_control import Pid_controller
 
-# step time - seconds
-time_step = 0.001
 
-# Simulation time - seconds
-simulation_time = 50
 
 
 class dynamic_system():
