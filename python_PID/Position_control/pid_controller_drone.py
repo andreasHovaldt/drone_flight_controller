@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
+# PID controller that continously updates the time step.
 class Pid_controller():
-    def __init__(self, P, I, D, I_Max=None):
+    def __init__(self, P, I, D):
         self.Kp = P
         self.Ki = I
         self.Kd = D
