@@ -21,8 +21,9 @@ speed = 0
 int_pos = 0
 
 sim_time = 10
+sim_time = 10
 
-data_array = np.zeros((6,sim_time))
+data_array = np.zeros((6,sim_time*1000))
 
 
 prev_int = 0 

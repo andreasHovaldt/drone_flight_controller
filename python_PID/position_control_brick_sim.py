@@ -34,7 +34,7 @@ speed_to_pos = Integrator(np.array([0,0,0]),time_step)
 
 
 
-#temporarily we simulate the drone whith a dynamic function 
+#temporarily we simulate the drone with a dynamic function 
 def brick_dynamics(thrust_vector):
     mass = 10
     acc_vector = thrust_vector/mass
