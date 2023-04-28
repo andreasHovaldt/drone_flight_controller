@@ -27,7 +27,7 @@ data_array = np.zeros((6,sim_time))
 
 prev_int = 0 
 prev_error = 0
-time_step = 0.01
+time_step = 0.5
 
 my_PID = pid_control.PID_control(time_step, 20, 1, 10)
 

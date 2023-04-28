@@ -17,9 +17,9 @@ class PID_control:
         self.prev_error = 0
 
 
-    def update(self, error):
+    def update(self, error, time_step):
         #check if first step in simulation 
-        
+        self.Ts = time_step
 
         proportional = self.Kp * error
 
