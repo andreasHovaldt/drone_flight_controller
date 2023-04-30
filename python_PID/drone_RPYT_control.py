@@ -105,20 +105,17 @@ class Crazyflie_control():
         print('Disconnected from %s' % link_uri)
     
     def send_commands(self, roll, pitch, yawrate, thrust):
-
-
-
+        '''Function that sends the roll, pitch, yawrate and thrust command to the crazyflie.'''
         self._cf.commander.send_setpoint(roll,pitch,yawrate,thrust)
 
 
-
-
     def disconnect(self):
+        '''Function that turns off the motors on the crazyflie and closes the connection.'''
         self._cf.commander.send_setpoint(0,0,0,0)
 
         # Make sure that the last packet leaves before the link is closed
         # since the message queue is not flushed before closing
-        time.sleep(1)
+        time.sleep(0.1)
         self._cf.close_link()
         
         
