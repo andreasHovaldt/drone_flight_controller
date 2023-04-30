@@ -119,7 +119,7 @@ class Crazyflie_hover():
 
         # Make sure that the last packet leaves before the link is closed
         # since the message queue is not flushed before closing
-        time.sleep(1)
+        time.sleep(0.1)
 
         self._cf.close_link()
         

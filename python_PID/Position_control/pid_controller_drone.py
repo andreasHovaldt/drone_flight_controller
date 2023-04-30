@@ -14,21 +14,45 @@ class Pid_controller():
         # Clears the output and resets values.
         self.i_part = 0.0
         self.previous_error = 0.0
+        self.previous_time = 0.0
+        self.elapsed_time = 0.0
 
 
-    def update(self, error, time_step):
+    def update(self, error, current_time):
         
+        # Calculate new time (this will be in seconds)
+        self.elapsed_time = current_time - self.previous_time
+    
         # calculate the p_part
         p_part = error
 
         # Calculate the i_part
-        self.i_part = self.i_part + error * time_step
+        self.i_part = self.i_part + error * self.elapsed_time
         
         # Calculate the d_part
-        d_part = (error - self.previous_error) / time_step
+        d_part = (error - self.previous_error) / self.elapsed_time
 
-        # Update previous_error
+        # Update previous_error and previous_time
         self.previous_error = error
+        self.previous_time = current_time
 
         return self.Kp * p_part + self.Ki * self.i_part + self.Kd * d_part
         
+
+
+
+
+
+
+def main():
+    time = 0.01
+
+    error = 1000
+
+    PID = Pid_controller(1,0,2)
+
+    print(PID.update(error,time))
+
+
+if __name__ == '__main__':
+    main()
