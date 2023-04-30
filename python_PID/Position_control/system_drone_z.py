@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 # PID controller library
 from pid_controller_drone import Pid_controller
@@ -8,57 +9,51 @@ from pid_controller_drone import Pid_controller
 from vicon_data import viconUDP
 
 # drone libraries
-import logging
-import time
-from threading import Thread
-
 import cflib
 from cflib.crazyflie import Crazyflie
 from cflib.utils import uri_helper
 
+# Python script, connecting to CF
+from python_PID.drone_RPYT_control import Crazyflie_control
+
 
 
 class position_control():
-    def __init__(self, uri_for_crazyflie, setPointZ, ):
+    def __init__(self, drone, setPointZ):
+        self.drone = drone
         self.target = setPointZ
-        self.uri = uri_for_crazyflie
+        self.thrust = 0 # Thrust of the crazyflie drone (A 16-bit number: 0 -> 65535)
 
+        # Define max and min values for the thrust value on the crazyflie drone.
+        self. max_thrust = 65535
+        self.min_thrust = 0
 
-    def update(self, time_step):
+        # Initiate the PID controller
+        self.position_pid = Pid_controller(1, 0, 1)
+
+    def update(self, vicon_data_array):
+        '''Updates the control commands sent to the crazyflie'''
         
-        # Compute error
-        self.error = self.target - self.position
+        # Compute error (I have the reference position and the current location from the vicon data)
+        self.error = self.target - vicon_data_array[3]
 
-        # calculate new force
-        self.force = self.position_pid.update(self.error)
+        # calculate new thrust 
+        self.thrust = self.position_pid.update(self.error, vicon_data_array[0])
 
-        # Make sure force does not exceed max force.
-        if self.force > self.max_force:
-            self.force = self.max_force
-        elif self.force < -self.max_force:
-            self.force = -self.max_force
-
-
-        
-        # Calculate acc with new force + append new acc
-        self.acc = self.force / self.mass
-  
-
-        # Integrate twice to obtain position 
-        self.vel = self.vel + self.acc * time_step # First integration: acc -> velocity
-
-        self.position = self.position + self.vel * time_step # Second integration: vel -> position
+        # Make sure thrust is within the defined range.
+        if self.thrust > self.max_thrust:
+            self.thrust = self.max_thrust
+        elif self.thrust < self.min_thrust:
+            self.thrust = self.min_thrust
 
 
-        # Append new variables to the data arrays, in order to plot the results later.
-        self.force_array.append(self.force)
-        self.acc_array.append(self.acc)
-        self.vel_array.append(self.vel)
-        self.position_array.append(self.position)
-        self.time_array.append(time_step)
-        self.target_array.append(self.target)
+        # Move the drone
+        self.drone.send_commands(0, 0, 0, self.thrust)
 
 
+
+    def set_ref(self, setPointZ):
+        self.target = setPointZ
 
         
 
@@ -75,26 +70,35 @@ def main():
     vicon_port = 51001
     vicon_comm = viconUDP(vicon_ip,vicon_port)
 
+    # Get initial info from vicon (Used to check the while loop before first cycle)
+    vicon_data = vicon_comm.getTimestampedData()
 
     # uri for crazyflie drone
     uri = uri_helper.uri_from_env(default='radio://0/80/2M/E7E7E7E7E7')
 
-    # 
+    # Initialize the class.
+    drone = Crazyflie_control(link_uri=uri)
 
     # Initialize the drone class that calculates the new thrust sends the commands to the drone.
-    position_control(setPointZ=1000) # setPointZ is meassured in mm.
+    system = position_control(drone, setPointZ=1000) # setPointZ is meassured in mm.
 
 
+    # While loop that runs the control system and drone (No stop)
+    '''while True:
+        # Update new position (and time) from vicon
+        vicon_data = vicon_comm.getTimestampedData()
 
-    # # Plot position and target
-    # plt.plot(system.time_array, system.position_array)
-    # plt.plot(system.time_array, system.target_array)
+        # Send new position (and time) to the control system
+        system.update(vicon_data)'''
+
     
-    # # Plot force
-    # #plt.plot(system.time_array, system.force_array)
+    # Experimental loop (lands after target is reached)
+    while vicon_data[3] :
+        # Update new position (and time) from vicon
+        vicon_data = vicon_comm.getTimestampedData()
 
-    # plt.grid()
-    # plt.show()
+        # Send new position (and time) to the control system
+        system.update(vicon_data)
 
 
 
