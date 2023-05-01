@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 # PID controller that continously updates the time step.
 class Pid_controller():
@@ -55,6 +56,14 @@ class Saturator():
             input = self.min     
 
         return input
+
+
+
+
+    
+def thrust_to_command(input_thrust_grams):
+    return 604462909807314587353088*math.sqrt((7544718326147207*input_thrust_grams/302231454903657293676544 + 11472845254943727195617/37778931862957161709568000000))/7544718326147207 - 41468280677699072032768/943089790768400875
+
 
 
 def main():
