@@ -10,7 +10,7 @@ time_step = 0.01
 #start values 
 
 
-point_array = np.random.random((10,3))
+point_array = np.random.random((20,3))
 point_array[0] = [0,0,0]
 position = point_array[0]
 acceleration = np.array([0,0,0]) 
@@ -48,8 +48,10 @@ ref_array = []
 pos_array = []
 
 
-for clock in np.arange(0,sim_time,time_step):
+for clock in np.arange(0,sim_time+100,time_step):
     ref = brick_ref_trj.get_position(clock)
+
+
     time_array.append(clock)
     
     ref_array.append(ref.T)
@@ -58,14 +60,14 @@ for clock in np.arange(0,sim_time,time_step):
     
     thrust = np.array([0,0,0])
 
-    thrust[0] = x_pid.update(error[0])
-    thrust[1] = y_pid.update(error[1])
-    thrust[2] = z_pid.update(error[2])
+    thrust[0] = x_pid.update(error[0],time_step)
+    thrust[1] = y_pid.update(error[1],time_step)
+    thrust[2] = z_pid.update(error[2],time_step)
 
     acc = brick_dynamics(thrust)
 
-    speed = acc_to_speed.intgrate(acc)
-    position = speed_to_pos.intgrate(speed)
+    speed = acc_to_speed.intgrate(acc,time_step)
+    position = speed_to_pos.intgrate(speed,time_step)
 
     pos_array.append(np.transpose(position))
 

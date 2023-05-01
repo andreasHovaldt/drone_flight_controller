@@ -7,7 +7,7 @@ from crazy_link import Crazyflie_link
 from cflib.utils import uri_helper
 from vicon_data import viconUDP
 
-
+from trajectory_generation import Trajectory
 
 
 def get_vicon_data_update_pid():
@@ -25,8 +25,14 @@ def get_vicon_data_update_pid():
     # For use with trajectory (find start postition)
     vicon_data = vicon.getTimestampedData()
     print(f"vicon data {vicon_data}")
+
+    trj_points = [[vicon_data[1:4]],[0, 0, 1000], [0, 1000, 1000], [0, 1000, vicon_data[4]+100]]
+    trj_points = np.array(trj_points)
+    cool_trj = Trajectory(trj_points)
+
     while running:
         vicon_data = vicon.getTimestampedData()
+        ref = cool_trj.get_position(vicon_data[0])
 
         error = np.array(ref) - np.array(vicon_data[1:4])
 

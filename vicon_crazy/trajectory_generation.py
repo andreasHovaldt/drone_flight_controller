@@ -16,7 +16,7 @@ class Trajectory:
 
         for start_point, end_point in zip(self.waypoints[0:], self.waypoints[1:]):
             distance =  math.sqrt(sum((end_point-start_point)**2))
-            section_time = distance*2+1
+            section_time = distance*0.002+1
             #print(f"start point{start_point}, end point {end_point} ,distance {math.sqrt(sum((end_point-start_point)**2))}")
             
 
@@ -40,20 +40,20 @@ class Trajectory:
 
     def get_position(self, time_seconds):
         #first we must find the cubic data depending on the time 
+        
         if time_seconds >= self.cum_time[-1]:
             cubic_data = self.cubic_func_data[-1,:,:]
-            section_start_time(self.cum_time[-2])
+            section_time = self.get_total_time()-0.1
+            position = self.waypoints[-1]
+
         else:
             section = np.argmax(time_seconds < self.cum_time)
             cubic_data = self.cubic_func_data[section-1,:,:]
             
             section_start_time = self.cum_time[section-1]
+            section_time = time_seconds-section_start_time
         
-        #print(cubic_data[0,:].shape)
-        #print(section)
-        section_time = time_seconds-section_start_time
-        position = cubic_data[0,:] + cubic_data[1,:] * section_time+cubic_data[2,:]*section_time**2 + cubic_data[3,:]*section_time**3
-        #print(f"time {time_seconds}, section {section}, cum time {self.cum_time[9]}")
+            position = cubic_data[0,:] + cubic_data[1,:] * section_time+cubic_data[2,:]*section_time**2 + cubic_data[3,:]*section_time**3
         return(position)
 
 
@@ -66,11 +66,11 @@ class Trajectory:
         return sum(self.time_array)
 
 if __name__ == "__main__":
-    point_array = np.random.random((10,3))
+    point_array = np.random.random((10,3))*1000
     point_array[0,:] = [0,0,0]
     print(point_array)
     my_trj = Trajectory(point_array)
-    time_space = np.arange(0,my_trj.cum_time[-1], 0.1)
+    time_space = np.arange(0,my_trj.cum_time[-1]+10, 0.1)
     trj_out = []
     for time in time_space:
         trj_out.append(my_trj.get_position(time))
