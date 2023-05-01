@@ -1,7 +1,7 @@
 import time
 
 
-import vicon_communication
+import Position_control.vicon_data as vicon
 from pid_control import PID_control
 from discrete_integrator import Integrator
 
@@ -24,15 +24,19 @@ logging.basicConfig(level=logging.ERROR)
 
 
 # Vicon comm
-ip = "0.0.0.0"
 
-port = "51001"
-
-vicon_comunicator = vicon_communication.viconUDP(ip,port)
+vicon_comunicator = vicon.viconUDP()
 
 
 
-z_pid = PID_control(0.1, 1, 0, 1)
+P = 0.2
+
+I = 0
+
+D = 2.6
+
+
+z_pid = PID_control(0.1, P, I, D)
 
 ref = 1000
 
@@ -49,7 +53,12 @@ if __name__ == "__main__":
         time_step = time - prev_time
         thrust = z_pid.update(error, time_step)
         print(thrust)
-        drone.send_commands(0,0,0,thrust)
+        # Make sure thrust is within the defined range.
+        if thrust > 65000:
+            thrust = 65000
+        elif thrust < 0:
+            thrust = 0
+        drone.updateRPYT(0,0,0,thrust)
         prev_time = time
         
 

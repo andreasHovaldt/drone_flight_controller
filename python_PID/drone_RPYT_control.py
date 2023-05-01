@@ -74,6 +74,11 @@ class Crazyflie_control():
 
         self._cf.open_link(link_uri)
 
+        self.roll = 0
+        self.pitch = 0
+        self.yawrate = 0
+        self.thrust = 0
+
         print('Connecting to %s' % link_uri)
 
     def _connected(self, link_uri):
@@ -82,7 +87,7 @@ class Crazyflie_control():
 
         # Start a separate thread to do the motor test.
         # Do not hijack the calling thread!
-        Thread(target=self.hover).start()
+        Thread(target=self.waitForCommands()).start()
 
         time.sleep(0.1)
         
@@ -104,9 +109,20 @@ class Crazyflie_control():
         """Callback when the Crazyflie is disconnected (called in all cases)"""
         print('Disconnected from %s' % link_uri)
     
-    def send_commands(self, roll, pitch, yawrate, thrust):
+    def waitForCommands(self):
+        ''' While loop that repeats the send_commands function with the updated values.'''
+
+        loop = 0
+
+        while loop < 1000:
+            self.send_commands()
+            loop += 1
+
+        self.disconnect()
+
+    def send_commands(self):
         '''Function that sends the roll, pitch, yawrate and thrust command to the crazyflie.'''
-        self._cf.commander.send_setpoint(roll,pitch,yawrate,thrust)
+        self._cf.commander.send_setpoint(self.roll, self.pitch, self.yawrate, self.thrust)
 
 
     def disconnect(self):
@@ -118,7 +134,11 @@ class Crazyflie_control():
         time.sleep(0.1)
         self._cf.close_link()
         
-        
+    def updateRPYT(self, new_roll, new_pitch, new_yawrate, new_thrust):
+        self.roll = new_roll
+        self.pitch = new_pitch
+        self.yawrate = new_yawrate
+        self.thrust = new_thrust
 
 if __name__ == '__main__':
     # Initialize the low-level drivers

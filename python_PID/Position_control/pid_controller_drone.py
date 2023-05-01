@@ -49,7 +49,7 @@ def main():
 
     error = 1000
 
-    PID = Pid_controller(1,0,2)
+    PID = Pid_controller(0.1,0,2)
 
     print(PID.update(error,time))
 

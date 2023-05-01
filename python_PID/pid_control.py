@@ -23,7 +23,7 @@ class PID_control:
 
         proportional = self.Kp * error
 
-        integration = self.error_int.intgrate(error)
+        integration = self.error_int.intgrate(error, time_step)
 
         integral = self.Ki * integration
 

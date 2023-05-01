@@ -1,7 +1,7 @@
 import socket
 import numpy as np
 
-local_ip = "172.17.100.11"
+local_ip = "0.0.0.0"
 port = 20001
 
 

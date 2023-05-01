@@ -18,7 +18,7 @@ from python_PID.drone_RPYT_control import Crazyflie_control
 
 
 
-class position_control():
+class Position_control():
     def __init__(self, drone, setPointZ):
         self.drone = drone
         self.target = setPointZ
@@ -80,26 +80,26 @@ def main():
     drone = Crazyflie_control(link_uri=uri)
 
     # Initialize the drone class that calculates the new thrust sends the commands to the drone.
-    system = position_control(drone, setPointZ=1000) # setPointZ is meassured in mm.
+    system = Position_control(drone, setPointZ=1000) # setPointZ is meassured in mm.
 
 
     # While loop that runs the control system and drone (No stop)
-    '''while True:
-        # Update new position (and time) from vicon
-        vicon_data = vicon_comm.getTimestampedData()
-
-        # Send new position (and time) to the control system
-        system.update(vicon_data)'''
-
-    
-    # Experimental loop (lands after target is reached)
-    while vicon_data[3] :
+    while True:
         # Update new position (and time) from vicon
         vicon_data = vicon_comm.getTimestampedData()
 
         # Send new position (and time) to the control system
         system.update(vicon_data)
 
+    
+    # Experimental loop (lands after target is reached)
+    '''while vicon_data[3] :
+        # Update new position (and time) from vicon
+        vicon_data = vicon_comm.getTimestampedData()
+
+        # Send new position (and time) to the control system
+        system.update(vicon_data)
+    '''
 
 
 if __name__ == '__main__':
