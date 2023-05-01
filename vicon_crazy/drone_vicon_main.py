@@ -13,20 +13,24 @@ from trajectory_generation import Trajectory
 def get_vicon_data_update_pid():
     global running, RPYT_data
 
+    pid_x = Pid_controller(1,0,1)
+    pid_y = Pid_controller(1,0,1)
     pid_z = Pid_controller(55,5,10)
+
+
     #pid_z = Pid_controller(0.1,0,2.6)
+
     print('connecting to vicon')
     vicon = viconUDP()
     print('connected to vicon')
+    XY_limiter = Saturator(10, -10)
     thrust_limiter = Saturator(60001, 10001)
-
-    ref = [0,0,1000+200]
 
     # For use with trajectory (find start postition)
     vicon_data = vicon.getTimestampedData()
     print(f"vicon data {vicon_data}")
 
-    trj_points = [[vicon_data[1:4]],[0, 0, 1000], [0, 1000, 1000], [0, 1000, vicon_data[4]+100]]
+    trj_points = [[vicon_data[1:4]],[0, 0, 1000], [0, 1000, 1000], [0, 1000, vicon_data[3]+300]]
     trj_points = np.array(trj_points)
     cool_trj = Trajectory(trj_points)
 
@@ -34,14 +38,18 @@ def get_vicon_data_update_pid():
         vicon_data = vicon.getTimestampedData()
         ref = cool_trj.get_position(vicon_data[0])
 
-        error = np.array(ref) - np.array(vicon_data[1:4])
+        error = ref - np.array(vicon_data[1:4])
 
+        roll = pid_y.update(error[1],vicon_data[0])
+        pitch = pid_x.update(error[0], vicon_data[0])
         thrust = pid_z.update(error[2],vicon_data[0])
 
         # Saturation
         thrust = thrust_limiter.limit(thrust)
+        roll = XY_limiter.limit(roll)
+        pitch = XY_limiter.limit(pitch)
 
-        RPYT_data = [0,0,0,int(thrust)]
+        RPYT_data = [roll,pitch,0,int(thrust)]
 
         time.sleep(1/900)
 

@@ -5,13 +5,9 @@ import math
 class Trajectory:
     def __init__(self, np_point_array):
         self.waypoints = np_point_array
-        self.number_of_ponints = np_point_array.shape[0]
+        self.number_of_points = np_point_array.shape[0]
         self.distance_array = []
         self.time_array = []
-
-        
-        #with the time array we can now make the cubic functions between each point 
-        
         self.cubic_func_data = []
 
         for start_point, end_point in zip(self.waypoints[0:], self.waypoints[1:]):
@@ -42,8 +38,7 @@ class Trajectory:
         #first we must find the cubic data depending on the time 
         
         if time_seconds >= self.cum_time[-1]:
-            cubic_data = self.cubic_func_data[-1,:,:]
-            section_time = self.get_total_time()-0.1
+            
             position = self.waypoints[-1]
 
         else:
@@ -60,7 +55,7 @@ class Trajectory:
         #print(self.distance_array)
 
     def get_number_of_points(self):
-        return self.number_of_ponints
+        return self.number_of_points
     
     def get_total_time(self):
         return sum(self.time_array)
