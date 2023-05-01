@@ -23,8 +23,6 @@ class Pid_controller():
         
         # Calculate new time (this will be in seconds)
         self.elapsed_time = current_time - self.previous_time
-
-        self.elapsed_time *= 100
         
         # calculate the p_part
         p_part = error
@@ -71,7 +69,7 @@ def main():
 
     error = 1000
 
-    PID = Pid_controller(0.1,0,2)
+    PID = Pid_controller(0.1, 0, 2)
 
     print(PID.update(error,time))
 
