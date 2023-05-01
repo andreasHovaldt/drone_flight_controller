@@ -14,7 +14,7 @@ from cflib.crazyflie import Crazyflie
 from cflib.utils import uri_helper
 
 # Python script, connecting to CF
-from python_PID.drone_RPYT_control import Crazyflie_control
+from python_PID.crazy_link import Crazyflie_control
 
 
 
