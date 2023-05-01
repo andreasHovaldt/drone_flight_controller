@@ -45,9 +45,7 @@ def get_vicon_data_update_pid():
 
 def send_RPYT():
     global RPYT_data, running, cf
-
-
-
+    
     # Unlocks CF motors
     cf.send_start_setpoint()
 
@@ -74,7 +72,10 @@ def main():
 
 
 if __name__ == "__main__":
+
+    # Global variables
     running = True
+    RPYT_data = [0,0,0,0]
 
 
     # uri for crazyflie drone
@@ -83,7 +84,7 @@ if __name__ == "__main__":
     cf = Crazyflie_link(uri)
     print('connected to crazyflie')
     
-    RPYT_data = [0,0,0,0]
+
 
     main()
 
