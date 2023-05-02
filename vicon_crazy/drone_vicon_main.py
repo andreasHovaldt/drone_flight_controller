@@ -13,7 +13,7 @@ from trajectory_generation import Trajectory
 
 
 def get_vicon_data_update_pid():
-    global running, RPYT_data, data_array_log, ref_array
+    global running, RPYT_data, data_array_log
 
     # RP_P = 25/1000
     # RP_I = 15/1000
@@ -50,8 +50,7 @@ def get_vicon_data_update_pid():
         vicon_data = vicon.getTimestampedData()
         ref = cool_trj.get_position(vicon_data[0])
         
-        ref_data = np.r_['0,2', ref_data, ref]
-        data_array_log.append(vicon_data)
+        data_array_log.append(vicon_data + ref.tolist())
         error = ref - np.array(vicon_data[1:4])
 
         roll = pid_y.update(error[1],vicon_data[0])
@@ -130,9 +129,6 @@ if __name__ == "__main__":
             running = False
             time.sleep(0.1)
             np_vicon_data = np.array(data_array_log)
-            np_vicon_data = np.c_[np_vicon_data,ref_array]
-            print(f" data log array {np.array(np_vicon_data)}")
-            print(f" data log array shape{np.array(np_vicon_data).shape}")
             np.savetxt("trj_data.txt", np.array(np_vicon_data))
             time.sleep(1)
             exit("Exiting program")
