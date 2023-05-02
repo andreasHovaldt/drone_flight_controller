@@ -12,7 +12,7 @@ class Trajectory:
 
         for start_point, end_point in zip(self.waypoints[0:], self.waypoints[1:]):
             distance =  math.sqrt(sum((end_point-start_point)**2))
-            section_time = distance*0.002+1
+            section_time = distance*0.004+1
             #print(f"start point{start_point}, end point {end_point} ,distance {math.sqrt(sum((end_point-start_point)**2))}")
             
 
@@ -32,7 +32,7 @@ class Trajectory:
         self.distance_array  = np.array(self.distance_array)
         self.cum_time        = np.insert(np.cumsum(self.time_array),0,0)
 
-        print(self.cubic_func_data.shape)
+        #print(self.cubic_func_data.shape)
 
     def get_position(self, time_seconds):
         #first we must find the cubic data depending on the time 
