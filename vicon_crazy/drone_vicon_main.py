@@ -25,7 +25,7 @@ def get_vicon_data_update_pid():
 
     pid_x = Pid_controller(RP_P,RP_I,RP_D)
     pid_y = Pid_controller(RP_P,RP_I,RP_D)
-    pid_z = Pid_controller(65,15,15)
+    pid_z = Pid_controller(75,15,15)
 
 
     #pid_z = Pid_controller(0.1,0,2.6)
@@ -61,8 +61,11 @@ def get_vicon_data_update_pid():
         thrust = thrust_limiter.limit(thrust)
         roll = roll_pitch_limiter.limit(roll)
         pitch = roll_pitch_limiter.limit(pitch)
-
-        RPYT_data = [roll,-pitch,0,int(thrust)]
+        
+        #place drone with blue lights facing the control suite
+        #create object in vicon 
+        #start flying with blue lights facing the control suite 
+        RPYT_data = [-roll,pitch,0,int(thrust)]
 
         time.sleep(1/900)
 
