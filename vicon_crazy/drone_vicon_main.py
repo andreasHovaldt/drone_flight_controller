@@ -26,7 +26,7 @@ def get_vicon_data_update_pid():
     pid_x = Pid_controller(RP_P,RP_I,RP_D)
     pid_y = Pid_controller(RP_P,RP_I,RP_D)
     pid_z = Pid_controller(75,15,15)
-
+    pid_yaw = Pid_controller(1,1,1)
 
     #pid_z = Pid_controller(0.1,0,2.6)
 
@@ -56,7 +56,8 @@ def get_vicon_data_update_pid():
         roll = pid_y.update(error[1],vicon_data[0])
         pitch = pid_x.update(error[0], vicon_data[0])
         thrust = pid_z.update(error[2],vicon_data[0])
-
+        #(yaw error, time)
+        yaw = pid_yaw.update(0-vicon_data[-1],vicon_data[0])
         # Saturation
         thrust = thrust_limiter.limit(thrust)
         roll = roll_pitch_limiter.limit(roll)
@@ -65,7 +66,7 @@ def get_vicon_data_update_pid():
         #place drone with blue lights facing the control suite
         #create object in vicon 
         #start flying with blue lights facing the control suite 
-        RPYT_data = [-roll,pitch,0,int(thrust)]
+        RPYT_data = [-roll,pitch,yaw,int(thrust)]
 
         time.sleep(1/900)
 
