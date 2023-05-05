@@ -46,6 +46,7 @@ def get_vicon_data_update_pid():
     trj_points = np.array(trj_points)
     cool_trj = Trajectory(trj_points)
     ref_data = trj_points[1,:]
+    
     while running:
         vicon_data = vicon.getTimestampedData()
         ref = cool_trj.get_position(vicon_data[0])
