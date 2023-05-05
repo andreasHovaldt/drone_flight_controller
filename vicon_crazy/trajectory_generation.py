@@ -3,22 +3,26 @@ import math
 
 
 class Trajectory:
-    def __init__(self, np_point_array):
-        self.waypoints = np_point_array
+    def __init__(self,start_origin, np_point_array):
+       
+        self.waypoints = np_point_array + np.ones_like(np_point_array)*start_origin
         self.number_of_points = np_point_array.shape[0]
         self.distance_array = []
         self.time_array = []
         self.cubic_func_data = []
 
+        #we go thrugh each waypoint and the next weypoint, first findinf the distance and then estimate the time i should take based on the distance 
+        #we then find a0, a1, a2, and a3 as in craig to describe the polynomial 
         for start_point, end_point in zip(self.waypoints[0:], self.waypoints[1:]):
             distance =  math.sqrt(sum((end_point-start_point)**2))
+            section_time = distance*0.004+1
+            
             if int(np.sum(start_point)) == int(np.sum(self.waypoints[1])) and int(np.sum(end_point)) == int(np.sum(self.waypoints[1])):
                 section_time = distance*0.0015+8
             else:
                 section_time = distance*0.0015+1
 
-            #print(f"start point{start_point}, end point {end_point} ,distance {math.sqrt(sum((end_point-start_point)**2))}")
-            
+           
 
             start_speed = np.array([0, 0, 0]) 
             end_speed   = np.array([0, 0, 0])
@@ -31,6 +35,7 @@ class Trajectory:
             self.time_array.append(section_time)
             self.distance_array.append(distance)
         
+        #we convert the data lists to np arrays to make the data easier to acsess in multidimensional order 
         self.cubic_func_data = np.array(self.cubic_func_data)
         self.time_array      = np.array(self.time_array)
         self.distance_array  = np.array(self.distance_array)
@@ -39,6 +44,9 @@ class Trajectory:
         #print(self.cubic_func_data.shape)
 
     def get_position(self, time_seconds):
+        '''
+        get_position, returns the position in np (x,y,z) of the trajectory for the time given
+        '''
         #first we must find the cubic data depending on the time 
         
         if time_seconds >= self.cum_time[-1]:
@@ -63,6 +71,12 @@ class Trajectory:
     
     def get_total_time(self):
         return sum(self.time_array)
+    
+    def get_time_array(self):
+        return self.time_array
+    
+    def get_distance_array(self):
+        return self.distance_array
 
 if __name__ == "__main__":
     point_array = np.random.random((10,3))*1000
