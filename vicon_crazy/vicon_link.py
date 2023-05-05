@@ -1,6 +1,7 @@
 import socket
 import time
 import struct as s
+import numpy as np
 
 class viconUDP:
 
@@ -34,6 +35,13 @@ class viconUDP:
         if unix_time: xdata.insert(0,time.time())
         else: xdata.insert(0,time.time()-self.time_start)
         return xdata
+    
+    def connection_test(self):
+        '''Returns true if the connection is succesfully established. Returns false otherwise'''
+        if np.array(self.getTimestampedData()).shape == (7,):
+            return True
+        else:
+            return False
 
 if __name__ == '__main__':
     vicon = viconUDP()

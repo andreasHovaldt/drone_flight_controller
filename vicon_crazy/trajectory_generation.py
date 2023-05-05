@@ -12,7 +12,11 @@ class Trajectory:
 
         for start_point, end_point in zip(self.waypoints[0:], self.waypoints[1:]):
             distance =  math.sqrt(sum((end_point-start_point)**2))
-            section_time = distance*0.004+1
+            if int(np.sum(start_point)) == int(np.sum(self.waypoints[1])) and int(np.sum(end_point)) == int(np.sum(self.waypoints[1])):
+                section_time = distance*0.0015+8
+            else:
+                section_time = distance*0.0015+1
+
             #print(f"start point{start_point}, end point {end_point} ,distance {math.sqrt(sum((end_point-start_point)**2))}")
             
 

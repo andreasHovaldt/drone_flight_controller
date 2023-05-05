@@ -10,42 +10,87 @@ from vicon_link import viconUDP
 from trajectory_generation import Trajectory
 
 
+def exit_program(trajectory_done: bool):
+    global cf, running, data_array_log
+    if trajectory_done:
+        print("Trajectory fulfilled")
+    else:
+        print(">>>> Sending stop command to Crazyflie <<<<")
+    cf.send_setpoint([0,0,0,0])
+    time.sleep(0.1)
+    cf.send_stop_setpoint()
+    time.sleep(0.1)
+    running = False
+    time.sleep(0.1)
+    np_vicon_data = np.array(data_array_log)
+    np.savetxt("trj_data.txt", np.array(np_vicon_data))
+    time.sleep(1)
+    exit("Exiting program")
 
 
 def get_vicon_data_update_pid():
-    global running, RPYT_data, data_array_log
+    global running, RPYT_data, data_array_log, cool_trj, total_time, experimental
 
     # RP_P = 25/1000
     # RP_I = 15/1000
     # RP_D = 9.8/1000
 
-    RP_P = 60/1000
-    RP_I = 5/1000
-    RP_D = 45/1000
+    match experimental:
+        case True:
+            # PID coefficients from theory
+            RP_P = 1.1/1000
+            RP_I = 0.051/1000
+            RP_D = 5.88/1000
+
+        case False:
+            # PID coefficients from testing
+            RP_P = 60/1000
+            RP_I = 5/1000
+            RP_D = 45/1000
+
+
+
+
 
     pid_x = Pid_controller(RP_P,RP_I,RP_D)
     pid_y = Pid_controller(RP_P,RP_I,RP_D)
-    pid_z = Pid_controller(75,15,15)
-    pid_yaw = Pid_controller(1,1,1)
+    pid_z = Pid_controller(100,25,15)
+    #pid_yaw = Pid_controller(1.4,0.3,1)
 
-    #pid_z = Pid_controller(0.1,0,2.6)
+    pid_yaw = Pid_controller(13,1,12)
 
     print('connecting to vicon')
     vicon = viconUDP()
 
-    print('connected to vicon')
+    # Test vicon connection
+    if vicon.connection_test() != True:
+        print('VICON TEST NOT PASSED!')
+    else:
+        print('Connected to vicon')
+
     roll_pitch_limiter = Saturator(5, -5)
-    thrust_limiter = Saturator(60001, 10001)
+    thrust_limiter = Saturator(64001, 10001)
 
     # For use with trajectory (find start postition)
     vicon_data_first_run = vicon.getTimestampedData()
     #print(f"vicon data {vicon_data}")
 
-    trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[0, 0, 1000], [0, 1000, 1000], [0, 1000, vicon_data[3]+300]]
+    #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000],[0, 0, 1000], [0, 1000, 1000], [0, 1000, vicon_data_first_run[3]+1300]]
+    trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]], 
+                   [vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000], 
+                    [vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000], 
+                    [vicon_data_first_run[1]+1000,vicon_data_first_run[2],vicon_data_first_run[3]+1000], 
+                    [vicon_data_first_run[1]+1000,vicon_data_first_run[2]+1000,vicon_data_first_run[3]+1000], 
+                    [vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1300], 
+                    [vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+200]]
+                   
     #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000], [0,0,vicon_data_first_run[3]+1000]]
     trj_points = np.array(trj_points)
+    #print(trj_points.shape)
     cool_trj = Trajectory(trj_points)
     ref_data = trj_points[1,:]
+
+    total_time = cool_trj.get_total_time()
     
     while running:
         vicon_data = vicon.getTimestampedData()
@@ -59,6 +104,7 @@ def get_vicon_data_update_pid():
         thrust = pid_z.update(error[2],vicon_data[0])
         #(yaw error, time)
         yaw = pid_yaw.update(0-vicon_data[-1],vicon_data[0])
+
         # Saturation
         thrust = thrust_limiter.limit(thrust)
         roll = roll_pitch_limiter.limit(roll)
@@ -67,7 +113,7 @@ def get_vicon_data_update_pid():
         #place drone with blue lights facing the control suite
         #create object in vicon 
         #start flying with blue lights facing the control suite 
-        RPYT_data = [-roll,pitch,yaw,int(thrust)]
+        RPYT_data = [-roll,pitch,-yaw,int(thrust)]
 
         time.sleep(1/900)
 
@@ -111,6 +157,10 @@ if __name__ == "__main__":
     RPYT_data = [0,0,0,0]
     data_array_log = []
     ref_array = None
+    cool_trj = None
+    total_time = 0.0
+    experimental = False
+
     # uri for crazyflie drone
     uri = uri_helper.uri_from_env(default='radio://0/80/2M/E7E7E7E7E7')
 
@@ -121,19 +171,16 @@ if __name__ == "__main__":
 
     main()
 
+
+    timer = time.time()
+
     # Exit program with KeyboardInterrupt, and stop the other threads
     print('Entering main while loop - Cancel with: ctrl + c')
     while 1:
-        try: time.sleep(0.2)
+        try: 
+            time.sleep(0.2)
+            if timer+total_time < time.time():
+                exit_program(1)
+
         except KeyboardInterrupt:
-            print(">>>> Sending stop command to Crazyflie <<<<")
-            cf.send_setpoint([0,0,0,0])
-            time.sleep(0.1)
-            cf.send_stop_setpoint()
-            time.sleep(0.1)
-            running = False
-            time.sleep(0.1)
-            np_vicon_data = np.array(data_array_log)
-            np.savetxt("trj_data.txt", np.array(np_vicon_data))
-            time.sleep(1)
-            exit("Exiting program")
+            exit_program(0)
