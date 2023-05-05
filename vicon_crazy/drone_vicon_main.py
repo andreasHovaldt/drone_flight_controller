@@ -5,7 +5,7 @@ from control_blocks import Pid_controller, Saturator
 
 from crazy_link import Crazyflie_link
 from cflib.utils import uri_helper
-from vicon_data import viconUDP
+from vicon_link import viconUDP
 
 from trajectory_generation import Trajectory
 
@@ -19,9 +19,9 @@ def get_vicon_data_update_pid():
     # RP_I = 15/1000
     # RP_D = 9.8/1000
 
-    RP_P = 45/1000
+    RP_P = 60/1000
     RP_I = 5/1000
-    RP_D = 50/1000
+    RP_D = 45/1000
 
     pid_x = Pid_controller(RP_P,RP_I,RP_D)
     pid_y = Pid_controller(RP_P,RP_I,RP_D)
@@ -41,8 +41,8 @@ def get_vicon_data_update_pid():
     vicon_data_first_run = vicon.getTimestampedData()
     #print(f"vicon data {vicon_data}")
 
-    #trj_points = [[vicon_data[1:4]],[0, 0, 1000], [0, 1000, 1000], [0, 1000, vicon_data[3]+300]]
-    trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000], [0,0,vicon_data_first_run[3]+1000]]
+    trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[0, 0, 1000], [0, 1000, 1000], [0, 1000, vicon_data[3]+300]]
+    #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000], [0,0,vicon_data_first_run[3]+1000]]
     trj_points = np.array(trj_points)
     cool_trj = Trajectory(trj_points)
     ref_data = trj_points[1,:]

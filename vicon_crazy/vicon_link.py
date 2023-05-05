@@ -11,6 +11,7 @@ class viconUDP:
         # Websocket setup
         self.in_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.in_sock.bind((ip, port))
+        #print('Connected to vicon')
 
     def getPosRot(self):
         data, addr = self.in_sock.recvfrom(1024) # buffer size is 1024 bytes
