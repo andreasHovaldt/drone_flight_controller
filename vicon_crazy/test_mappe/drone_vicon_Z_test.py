@@ -41,6 +41,7 @@ def get_vicon_data_update_pid():
 
         RPYT_data = [0,0,0,int(thrust)]
 
+        # Sleep to allow the other threads to run
         time.sleep(1/900)
 
 
@@ -55,12 +56,12 @@ def send_RPYT():
 
     while running:
         cf.send_setpoint(RPYT_data)
-        #print(RPYT_data)
-        # Find ud af hvorfor vi sover
+
+        # Sleep to allow the other threads to run
         time.sleep(1/900)
 
 
-def main():
+def threads_vicon_crazy_start():
     thread_cf = Thread(target=send_RPYT)
     thread_cf.start()
     print('cf thread started')
@@ -90,15 +91,15 @@ if __name__ == "__main__":
     print('connected to crazyflie')
     
 
-
-    main()
+    # Start the other threads
+    threads_vicon_crazy_start()
 
     # Exit program with KeyboardInterrupt, and stop the other threads
     print('Entering main while loop - Cancel with: ctrl + c')
     while 1:
         try: time.sleep(0.2)
         except KeyboardInterrupt:
-            print(">>>> Sending stop command to Crazyflie <<<<")
+            print("SHUTTING DOWN MOTORS - KEYBOARD INTERRUPT")
             cf.send_setpoint(0,0,0,0)
             time.sleep(0.1)
             cf.send_stop_setpoint()
