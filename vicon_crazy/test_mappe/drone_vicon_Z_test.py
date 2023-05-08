@@ -22,23 +22,29 @@ def get_vicon_data_update_pid():
     print('connected to vicon')
     thrust_limiter = Saturator(60001, 10001)
 
-    # For use with trajectory (find start postition)
+    # Find the start height, in the vicon system
     vicon_data_first_run = vicon.getTimestampedData()
-    #print(f"vicon data {vicon_data}")
+
+
+    # Define reference as the start height + 1000 mm
+    ref = 1000 + vicon_data_first_run[3]
 
 
     while running:
+        # Fetch new data from vicon
         vicon_data = vicon.getTimestampedData()
-        ref = 1000 + vicon_data_first_run[3]
 
+
+        # Update error with the new data
         error = ref - vicon_data[3]
 
+        # Calculate the new thrust value using the pid-controller
         thrust = pid_z.update(error, vicon_data[0])
 
         # Saturation
         thrust = thrust_limiter.limit(thrust)
 
-
+        # Update the global variable RPYT_data, in order for the crazyflie to act according to the newest data.
         RPYT_data = [0,0,0,int(thrust)]
 
         # Sleep to allow the other threads to run
@@ -55,6 +61,7 @@ def send_RPYT():
     cf.send_start_setpoint()
 
     while running:
+        # Send the latest RPYT to the crazyflie
         cf.send_setpoint(RPYT_data)
 
         # Sleep to allow the other threads to run
@@ -62,12 +69,13 @@ def send_RPYT():
 
 
 def threads_vicon_crazy_start():
+    # Start a new thread running the crayflie function
     thread_cf = Thread(target=send_RPYT)
     thread_cf.start()
     print('cf thread started')
     time.sleep(0.2)
 
-    # New thread to run vicon and PID
+    # Start new thread to run vicon and PID
     print('starting vicon thread')
     thread_vicon = Thread(target=get_vicon_data_update_pid)
     thread_vicon.start()
@@ -87,6 +95,7 @@ if __name__ == "__main__":
     # uri for crazyflie drone
     uri = uri_helper.uri_from_env(default='radio://0/80/2M/E7E7E7E7E7')
 
+    # Establish connection to the cf drone
     cf = Crazyflie_link(uri)
     print('connected to crazyflie')
     
