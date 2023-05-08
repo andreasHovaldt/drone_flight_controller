@@ -82,8 +82,8 @@ def get_vicon_data_update_pid():
                     [931,1892, 1500], 
                     [1450,  8, 500], 
                     [-60,1280, 2000], 
-                    [1925,1221,700]
-                    [0,     0, 1000]
+                    [1925,1221,700],
+                    [0,     0, 1000],
                     [0,     0, 201]]
                    
     #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000], [0,0,vicon_data_first_run[3]+1000]]
