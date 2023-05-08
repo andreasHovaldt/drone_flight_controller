@@ -76,7 +76,7 @@ def get_vicon_data_update_pid():
     #print(f"vicon data {vicon_data}")
 
     #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000],[0, 0, 1000], [0, 1000, 1000], [0, 1000, vicon_data_first_run[3]+1300]]
-    trj_points = [  [0,     0, 0    ], 
+    trj_points_summon = [  [0,     0, 0    ], 
                     [0,     0, 1000], 
                     [0,     0, 1000], 
                     [931,1892, 1500], 
@@ -85,13 +85,18 @@ def get_vicon_data_update_pid():
                     [1925,1221,700],
                     [0,     0, 1000],
                     [0,     0, 201]]
-                   
+    trj_points_field = [[0,0,0], [0,0,2000], [0,0,1000]]           
+    for x_point in range(5):
+        for y_point in range(5):
+            trj_points_field.append([x_point*500, y_point*500, 1000])
+    trj_points_field = np.array(trj_points_field)
+ 
     #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000], [0,0,vicon_data_first_run[3]+1000]]
     
     drone_origin = np.array([vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]])
     trj_points = np.array(trj_points)
     #print(trj_points.shape)
-    cool_trj = Trajectory(drone_origin,trj_points)
+    cool_trj = Trajectory(drone_origin,trj_points_field)
     ref_data = trj_points[1,:]
 
     total_time = cool_trj.get_total_time()
