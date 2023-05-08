@@ -1,6 +1,7 @@
 import socket
 import time
 import struct as s
+import numpy as np
 
 class viconUDP:
 
@@ -11,6 +12,7 @@ class viconUDP:
         # Websocket setup
         self.in_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.in_sock.bind((ip, port))
+        #print('Connected to vicon')
 
     def getPosRot(self):
         data, addr = self.in_sock.recvfrom(1024) # buffer size is 1024 bytes
@@ -33,6 +35,13 @@ class viconUDP:
         if unix_time: xdata.insert(0,time.time())
         else: xdata.insert(0,time.time()-self.time_start)
         return xdata
+    
+    def connection_test(self):
+        '''Returns true if the connection is succesfully established. Returns false otherwise'''
+        if np.array(self.getTimestampedData()).shape == (7,):
+            return True
+        else:
+            return False
 
 if __name__ == '__main__':
     vicon = viconUDP()
