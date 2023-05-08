@@ -166,11 +166,8 @@ if __name__ == "__main__":
 
     cf = Crazyflie_link(uri)
     print('connected to crazyflie')
-    
-
 
     main()
-
 
     timer = time.time()
 
