@@ -4,7 +4,6 @@ from tkinter import ttk
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 
-import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backend_bases import key_press_handler
 
@@ -20,7 +19,7 @@ traj_points_z = [1000, 750, 500, 500, 500, -250, -500, -750, -1000, -700, -600, 
 data = np.array(list(zip(traj_points_x,traj_points_y,traj_points_z)))
 
 
-def establish_connection():
+def establish_connection(): #TODO: fix empty function
     print("Establishing connection to the Crazyflie!")
     time.sleep(1)
     randBool = random.choice([True, False])
@@ -29,8 +28,16 @@ def establish_connection():
     return randBool
 
 
+def run_trajectory_flight(): #TODO: fix empty function
+    print("Flying set trajectory...")
+    time.sleep(2)
+    print("Done flying! [WIP]")
 
 
+def shutoff_motors(): #TODO: fix empty function
+    print("Shutting off motors...")
+    time.sleep(1)
+    print("CrazyFlie has been put to sleep [WIP]")
 
 
 
@@ -44,6 +51,8 @@ class gui(tk.Tk):
         self.title("CrazyFlie Flight GUI")
         #self.geometry("1300x1000")
         self.resizable(width=False, height=False)
+        self.iconphoto(False, tk.PhotoImage(file="gui\icon.png"))
+        
         
         # Root title
         title_label = tk.Label(master=root,font=("Arial", 30, "bold underline"),text="CrazyFlie Flight GUI")
@@ -55,13 +64,20 @@ class gui(tk.Tk):
         connection_frame.grid(row=1,column=0,padx=10,pady=10,sticky=tk.W)
         
         
-        ### Trajectory shizzle
+        # Controller
+        controller_frame = self.crazyflie_controller()
+        controller_frame.grid(row=2,column=0,padx=10,pady=10,sticky=tk.W)
+        
+        
+        # Trajectory generation
         traj_frame = self.trajectory_gen()
-        traj_frame.grid(row=2,column=0,sticky=tk.W,padx=10)
+        traj_frame.grid(row=6,column=0,sticky=tk.W,padx=10)
+        
         
         # Trajectory 3D plot
-        traj_plot = self.trajectory_plot(traj_points_x,traj_points_y,traj_points_z)
-        traj_plot.grid(row=3,column=0,padx=10,pady=10)
+        traj_plot = self.trajectory_plot()
+        traj_plot.grid(row=1,column=1,rowspan=6,padx=10,pady=[0,10])
+        
     
     
     def crazyflie_connection(self):
@@ -72,34 +88,46 @@ class gui(tk.Tk):
             else:
                 label["text"] = "Connection failure!"
         
-        current_frame = tk.Frame()
-        
-        # Frame title label
-        title_label_frame = tk.LabelFrame(current_frame,text="CrazyFlie connection status", font=("Arial", 22, "underline"), padx=10, pady=10)
-        title_label_frame.grid(row=0, column=0)
+        current_frame = tk.LabelFrame(text="CrazyFlie connection status", font=("Arial", 22, "underline"), padx=10, pady=10)
         
         
         # Connect button
-        connect_btn = tk.Button(
-            master=title_label_frame,
-            font=("Arial", 12),
-            text="Connect",
-            command= lambda: connection_helper_function(status_label) # TODO: data sent to function needs to be changed to current "budget_data"
-        )
+        connect_btn = tk.Button(master=current_frame,font=("Arial", 12),text="Connect",command= lambda: connection_helper_function(status_label))
         connect_btn.grid(row=0,column=0)
         
         
-        status_txt_label = tk.Label(master=title_label_frame,font=("Arial", 12),text="Status:")
+        status_txt_label = tk.Label(master=current_frame,font=("Arial", 12),text="Status:")
         status_txt_label.grid(row=0,column=1,padx=[25,0])
-        status_label = tk.Label(master=title_label_frame,font=("Arial", 12),text="Disconnected...")
+        status_label = tk.Label(master=current_frame,font=("Arial", 12),text="Disconnected...")
         status_label.grid(row=0,column=2)
         
         
         return current_frame
+    
+    
+    def crazyflie_controller(self):
+        current_frame = tk.LabelFrame(text="CrazyFlie Controller", font=("Arial", 22, "underline"), padx=10, pady=10)
         
+        
+        ### Run current trajectory txt + button 
+        run_traj_label = tk.Label(master=current_frame,font=("Arial", 16),text="Run current trajectory:")
+        run_traj_label.grid(row=0,column=0,padx=[25,0])
+        run_traj_btn = tk.Button(master=current_frame,font=("Arial", 12),text="Start",command= lambda: run_trajectory_flight())
+        run_traj_btn.grid(row=0,column=1,padx=20,pady=10)
+        
+        
+        ### Shut off Crazyflie motors txt + button 
+        shutoff_label = tk.Label(master=current_frame,font=("Arial", 16),text="Shut-off motors:")
+        shutoff_label.grid(row=1,column=0,padx=[25,0])
+        shutoff_btn = tk.Button(master=current_frame,font=("Arial", 12),text="Stop",command= lambda: shutoff_motors())
+        shutoff_btn.grid(row=1,column=1,padx=20)
+        
+        
+        return current_frame
+    
     
     def trajectory_gen(self):
-        # Declare function for updateing a treeview
+        # Declare function for updating a treeview
         def update_treeview(treeview_object: ttk.Treeview):
             # Clear treeview
             treeview_object.delete(*treeview_object.get_children())
@@ -109,12 +137,13 @@ class gui(tk.Tk):
             for pts in zip(pts_index,data[0:,0],data[0:,1],data[0:,2]): # Extracting x, y, z from data array
                 treeview_object.insert(parent="",index="end", values=pts)
         
+        # Declare function for adding new waypoint entries
         def add_entry(treeview_object: ttk.Treeview):
             # Append the entered data to global waypoint array
             global data
             data = np.append(data.copy(),[[int(new_x_var.get()),int(new_y_var.get()),int(new_z_var.get())]],axis=0)
             
-            print(data)
+            #print(data)
             
             # Update the treeview with the new waypoint
             update_treeview(treeview_object)
@@ -124,7 +153,6 @@ class gui(tk.Tk):
             y_entry.delete(0,"end")
             z_entry.delete(0,"end")
             
-        
         # Declare function for deleting a treeview entry
         def delete_entry(treeview_object: ttk.Treeview):
             # Get details of selected entry
@@ -214,23 +242,18 @@ class gui(tk.Tk):
         treeview_update.grid(row=12,column=1,padx=(10,0))
         
         
-        
         return current_frame
     
     
-    def trajectory_plot(self,x_pts,y_pts,z_pts):
-        current_frame = tk.Frame()
+    def trajectory_plot(self):
+        #current_frame = tk.Frame()
+        current_frame = tk.LabelFrame(text="Trajectory 3D Plot", font=("Arial", 22, "underline"), padx=10, pady=10)
+        #title
+        
         
         ### Creating matplotlib plot
         fig = Figure(figsize=(8,6),tight_layout=True)
         ax = fig.add_subplot(projection="3d")
-        ax.scatter(x_pts,y_pts,z_pts)
-        
-        #give the labels to each point
-        pts_index = range(0,len(traj_points_x))
-        for x, y, z, label in zip(x_pts, y_pts, z_pts, pts_index):
-            ax.text(x, y, z, label)
-        ax.plot(x_pts,y_pts,z_pts)
         
         ax.set_xlabel('X Pos [mm]')
         ax.set_ylabel('Y Pos [mm]')
@@ -255,6 +278,32 @@ class gui(tk.Tk):
         
         ### Packing figure onto its master frame (current_frame)
         figure_canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        
+        
+        ### Update 3D plot
+        def update_plot(canvas,ax):
+            global data
+            
+            # Clear plot
+            ax.clear()
+            
+            # Plot all points
+            ax.scatter(data[0:,0],data[0:,1],data[0:,2])
+            
+            # Plot lines between each point
+            ax.plot(data[0:,0],data[0:,1],data[0:,2])
+            
+            # Plot labels to each point
+            pts_index = range(0,len(data))
+            for x, y, z, label in zip(data[0:,0],data[0:,1],data[0:,2], pts_index):
+                ax.text(x, y, z, label)
+            
+            # Update plot
+            canvas.draw()
+        
+        update_canvas_btn = tk.Button(master=current_frame,font=("Arial",12),text="Update 3D plot",command=lambda: update_plot(figure_canvas,ax))
+        update_canvas_btn.pack(pady=[10,0])
+        
         return current_frame
         
         
@@ -276,15 +325,12 @@ def external_loop():
         
 
     
-    
-    
-    
-
+##### Main code
 
 if __name__ == "__main__":
-    # external_thread = Thread(target=external_loop)
-    # external_thread.start()
-    
     tk_thread = Thread(target=tk_loop)
     tk_thread.start()
+    
+    # external_thread = Thread(target=external_loop)
+    # external_thread.start()
     
