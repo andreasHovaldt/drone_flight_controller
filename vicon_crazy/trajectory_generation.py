@@ -10,6 +10,8 @@ class Trajectory:
         self.distance_array = []
         self.time_array = []
         self.cubic_func_data = []
+        self.time_per_mm = 0.002
+        self.extra_time_per_section = 1
 
         #we go thrugh each waypoint and the next weypoint, first findinf the distance and then estimate the time i should take based on the distance 
         #we then find a0, a1, a2, and a3 as in craig to describe the polynomial 
@@ -17,16 +19,19 @@ class Trajectory:
             distance =  math.sqrt(sum((end_point-start_point)**2))
             section_time = distance*0.004+1
             
-            if int(np.sum(start_point)) == int(np.sum(self.waypoints[1])) and int(np.sum(end_point)) == int(np.sum(self.waypoints[1])):
+            if int(np.sum(start_point)) == int(np.sum(self.waypoints[1])) and int(np.sum(end_point)) == int(np.sum(self.waypoints[1])) and False:
                 section_time = distance*0.0015+8
             else:
-                section_time = distance*0.0015+1
+                # Calculate 
+                section_time = distance * self.time_per_mm + self.extra_time_per_section
 
            
 
             start_speed = np.array([0, 0, 0]) 
             end_speed   = np.array([0, 0, 0])
 
+            # Following equations are used to calculate the cubic polynomials used for the trajectory 
+            # They are based on craig section 7.1 
             a2 = ((3)/((section_time)**2))*(end_point-start_point)-(2/(section_time))*start_speed-(1/(section_time))*end_speed
             a3 = -((2)/((section_time)**3))*(end_point - start_point)+(1/((section_time)**2))*(end_speed+start_speed)
             cubic_data = [start_point, start_speed, a2, a3]

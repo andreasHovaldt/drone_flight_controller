@@ -15,7 +15,7 @@ def exit_program(trajectory_done: bool):
     if trajectory_done:
         print("Trajectory fulfilled")
     else:
-        print(">>>> Sending stop command to Crazyflie <<<<")
+        print("SHUTTING DOWN MOTORS - KEYBOARD INTERRUPT")
     cf.send_setpoint([0,0,0,0])
     time.sleep(0.1)
     cf.send_stop_setpoint()
@@ -85,28 +85,47 @@ def get_vicon_data_update_pid():
                     [1925,1221,700],
                     [0,     0, 1000],
                     [0,     0, 201]]
-    trj_points_field = [[0,0,0], [0,0,2000], [0,0,1000]]           
+    
+    # Trajectory plan for field scenario - no stop points
+    trj_points_field = [[0,0,0], [0,0,1500], [0,0,1000]]  # starting point  
+    # following for loops are used to generate the rest of the field points each representing
+    # how many points in x- directon and y-direction       
     for x_point in range(5):
-        for y_point in range(5):
-            if (x_point % 2) == 0:
-                trj_points_field.append([x_point*500, y_point*500, 1000])
-                trj_points_field.append([x_point*500, y_point*500, 1000])
+        for y_point in range(2):
+            if (x_point % 2) == 0: 
+                #note that each point is appended twice to ensure that the drone has more time to 
+                #stay at the point 
+                trj_points_field.append([x_point*500, y_point*2000, 1000])
+                trj_points_field.append([x_point*500, y_point*2000, 1000])
             else:
-                trj_points_field.append([x_point*500, -y_point*500+2000, 1000])
-                trj_points_field.append([x_point*500, -y_point*500+2000, 1000])
-                
-
+                trj_points_field.append([x_point*500, -y_point*2000+2000, 1000])
+                trj_points_field.append([x_point*500, -y_point*2000+2000, 1000])
+    #The stop points are the n appended to the trajectory lsit
     trj_points_field.append([0,0,1000])
-    trj_points_field.append([0,0,300])
+    trj_points_field.append([0,0,250])
+
+    # Trajectory plan for field scenario
+    # trj_points_field = [[0,0,0], [0,0,1500], [0,0,1000]]           
+    # for x_point in range(5):
+    #     for y_point in range(5):
+    #         if (x_point % 2) == 0:
+    #             trj_points_field.append([x_point*500, y_point*500, 1000])
+    #             trj_points_field.append([x_point*500, y_point*500, 1000])
+    #         else:
+    #             trj_points_field.append([x_point*500, -y_point*500+2000, 1000])
+    #             trj_points_field.append([x_point*500, -y_point*500+2000, 1000])
+    # trj_points_field.append([0,0,1000])
+    # trj_points_field.append([0,0,250])
+
     trj_points_field = np.array(trj_points_field)
  
     #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000], [0,0,vicon_data_first_run[3]+1000]]
     
     drone_origin = np.array([vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]])
-    trj_points = np.array(trj_points)
+    #trj_points = np.array(trj_points)
     #print(trj_points.shape)
     cool_trj = Trajectory(drone_origin,trj_points_field)
-    ref_data = trj_points[1,:]
+    ref_data = trj_points_field[1,:]
 
     total_time = cool_trj.get_total_time()
     
@@ -152,7 +171,7 @@ def send_RPYT():
         time.sleep(1/900)
 
 
-def main():
+def threads_vicon_crazy_start():
     thread_cf = Thread(target=send_RPYT)
     thread_cf.start()
     print('cf thread started')
@@ -185,7 +204,7 @@ if __name__ == "__main__":
     cf = Crazyflie_link(uri)
     print('connected to crazyflie')
 
-    main()
+    threads_vicon_crazy_start()
 
     timer = time.time()
 

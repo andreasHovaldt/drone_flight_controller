@@ -40,7 +40,11 @@ class Pid_controller():
         return self.Kp * p_part + self.Ki * self.i_part + self.Kd * d_part
         
 
+
 class Saturator():
+    '''Class used to ensure that the motors dont exceed a set max or min value
+    this is used to ensre that the data send to the crazyflie control stack is consistent
+    with the documentation'''
     def __init__(self, upper_limit, lower_limit):
         self.max = upper_limit
         self.min = lower_limit
