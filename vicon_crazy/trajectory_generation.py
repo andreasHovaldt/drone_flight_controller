@@ -22,7 +22,7 @@ class Trajectory:
             if int(np.sum(start_point)) == int(np.sum(self.waypoints[1])) and int(np.sum(end_point)) == int(np.sum(self.waypoints[1])) and False:
                 section_time = distance*0.0015+8
             else:
-                # Calculate 
+                # Calculate time for this specific section
                 section_time = distance * self.time_per_mm + self.extra_time_per_section
 
            

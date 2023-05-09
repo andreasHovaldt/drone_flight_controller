@@ -1,18 +1,18 @@
 import numpy as np
 import time
 from threading import Thread
-from vicon_crazy.control_blocks import Pid_controller, Saturator
+from control_blocks import Pid_controller, Saturator
 
 from crazy_link import Crazyflie_link
 from cflib.utils import uri_helper
-from vicon_crazy.vicon_link import viconUDP
+from vicon_link import viconUDP
 
 
 def get_vicon_data_update_pid():
     global running, RPYT_data
 
 
-    pid_z = Pid_controller(55,5,10)
+    pid_z = Pid_controller(65,5,10)
     #pid_z = Pid_controller(0.1,0,2.6)
 
     print('connecting to vicon')
@@ -34,7 +34,7 @@ def get_vicon_data_update_pid():
         vicon_data = vicon.getTimestampedData()
 
         # Log the ref and the actual position
-        data_array_log.append(vicon_data + ref.tolist())
+        data_array_log.append([vicon_data[3], ref])
 
         # Update error with the new data
         error = ref - vicon_data[3]
