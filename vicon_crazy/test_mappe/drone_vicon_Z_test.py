@@ -8,7 +8,6 @@ from cflib.utils import uri_helper
 from vicon_crazy.vicon_link import viconUDP
 
 
-
 def get_vicon_data_update_pid():
     global running, RPYT_data
 
@@ -34,6 +33,8 @@ def get_vicon_data_update_pid():
         # Fetch new data from vicon
         vicon_data = vicon.getTimestampedData()
 
+        # Log the ref and the actual position
+        data_array_log.append(vicon_data + ref.tolist())
 
         # Update error with the new data
         error = ref - vicon_data[3]
@@ -90,6 +91,7 @@ if __name__ == "__main__":
     # Global variables
     running = True
     RPYT_data = [0,0,0,0]
+    data_array_log = []
 
 
     # uri for crazyflie drone
@@ -109,10 +111,13 @@ if __name__ == "__main__":
         try: time.sleep(0.2)
         except KeyboardInterrupt:
             print("SHUTTING DOWN MOTORS - KEYBOARD INTERRUPT")
-            cf.send_setpoint(0,0,0,0)
+            cf.send_setpoint([0,0,0,0])
             time.sleep(0.1)
             cf.send_stop_setpoint()
             time.sleep(0.1)
             running = False
             time.sleep(0.1)
+            np_vicon_data = np.array(data_array_log)
+            np.savetxt("trj_data.txt", np.array(np_vicon_data))
+            time.sleep(1)
             exit("Exiting program")
