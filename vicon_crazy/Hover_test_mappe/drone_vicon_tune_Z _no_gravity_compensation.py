@@ -60,7 +60,7 @@ def get_vicon_data_update_pid():
 
     roll_pitch_limiter = Saturator(5, -5)
     #thrust_limiter = Saturator(21001, -20001)
-    thrust_limiter = Saturator(60001, 40001)
+    thrust_limiter = Saturator(60001, 10001)
     
     # For use with trajectory (find start postition)
     vicon_data_first_run = vicon.getTimestampedData()

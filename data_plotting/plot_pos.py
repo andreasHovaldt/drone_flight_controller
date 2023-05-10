@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-data = np.loadtxt("trj_data.txt")
+data = np.loadtxt("hover_step_gc4.txt")
 
 print(f"trj shape {data.shape}")
 

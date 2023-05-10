@@ -10,13 +10,9 @@ from vicon_crazy.vicon_link import viconUDP
 
 
 def get_vicon_data_update_pid():
-    global running, RPYT_data
+    global running, RPYT_data, data_array_log
 
 
-<<<<<<< Updated upstream:vicon_crazy/test_mappe/drone_vicon_Z_test.py
-    pid_z = Pid_controller(55,5,10)
-    #pid_z = Pid_controller(0.1,0,2.6)
-=======
     RP_P = 60/1000
     RP_I = 5/1000
     RP_D = 45/1000
@@ -29,7 +25,6 @@ def get_vicon_data_update_pid():
     pid_yaw = Pid_controller(13,1,12)
 
     
->>>>>>> Stashed changes:vicon_crazy/Hover_test_mappe/drone_vicon_Z_test.py
 
     print('connecting to vicon')
     vicon = viconUDP()
@@ -49,11 +44,8 @@ def get_vicon_data_update_pid():
         # Fetch new data from vicon
         vicon_data = vicon.getTimestampedData()
 
-<<<<<<< Updated upstream:vicon_crazy/test_mappe/drone_vicon_Z_test.py
-=======
         # Log the ref and the actual position
         data_array_log.append([vicon_data[0], vicon_data[3], ref])
->>>>>>> Stashed changes:vicon_crazy/Hover_test_mappe/drone_vicon_Z_test.py
 
         # Update error with the new data
         error = ref - vicon_data[3]
@@ -110,6 +102,7 @@ if __name__ == "__main__":
     # Global variables
     running = True
     RPYT_data = [0,0,0,0]
+    data_array_log = []
 
 
     # uri for crazyflie drone

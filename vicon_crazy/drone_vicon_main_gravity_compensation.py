@@ -61,7 +61,7 @@ def get_vicon_data_update_pid():
 
 
     # Hover thrust
-    hover_thrust = 42308
+    hover_thrust = 43308
 
     print('connecting to vicon')
     vicon = viconUDP()
@@ -73,7 +73,7 @@ def get_vicon_data_update_pid():
         print('Connected to vicon')
 
     roll_pitch_limiter = Saturator(5, -5)
-    thrust_limiter = Saturator(22001, -21001)
+    thrust_limiter = Saturator(21001, -21001)
 
     # For use with trajectory (find start postition)
     vicon_data_first_run = vicon.getTimestampedData()

@@ -38,7 +38,7 @@ def get_vicon_data_update_pid():
     RP_I = 5/1000
     RP_D = 45/1000
 
-    hover_thrust = 42308
+    hover_thrust = 43308
 
 
 
