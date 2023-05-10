@@ -23,7 +23,7 @@ def exit_program(trajectory_done: bool):
     running = False
     time.sleep(0.1)
     np_vicon_data = np.array(data_array_log)
-    np.savetxt("trj_data_old.txt", np.array(np_vicon_data))
+    np.savetxt("trj_data.txt", np.array(np_vicon_data))
     time.sleep(1)
     exit("Exiting program")
 
@@ -54,10 +54,14 @@ def get_vicon_data_update_pid():
 
     pid_x = Pid_controller(RP_P,RP_I,RP_D)
     pid_y = Pid_controller(RP_P,RP_I,RP_D)
-    pid_z = Pid_controller(100,25,15)
+    pid_z = Pid_controller(25,5,13)
     #pid_yaw = Pid_controller(1.4,0.3,1)
 
     pid_yaw = Pid_controller(13,1,12)
+
+
+    # Hover thrust
+    hover_thrust = 42308
 
     print('connecting to vicon')
     vicon = viconUDP()
@@ -69,7 +73,7 @@ def get_vicon_data_update_pid():
         print('Connected to vicon')
 
     roll_pitch_limiter = Saturator(5, -5)
-    thrust_limiter = Saturator(64001, 10001)
+    thrust_limiter = Saturator(22001, -21001)
 
     # For use with trajectory (find start postition)
     vicon_data_first_run = vicon.getTimestampedData()
@@ -87,9 +91,9 @@ def get_vicon_data_update_pid():
                     [0,     0, 201]]
     
     # Trajectory plan for field scenario - no stop points
-    # trj_points_field = [[0,0,0], [0,0,1500], [0,0,1000]]  # starting point  
-    # # following for loops are used to generate the rest of the field points each representing
-    # # how many points in x- directon and y-direction       
+    #trj_points_field = [[0,0,0], [0,0,1000], [0,0,1000]]  # starting point  
+    # following for loops are used to generate the rest of the field points each representing
+    # how many points in x- directon and y-direction       
     # for x_point in range(5):
     #     for y_point in range(2):
     #         if (x_point % 2) == 0: 
@@ -105,7 +109,7 @@ def get_vicon_data_update_pid():
     # trj_points_field.append([0,0,250])
 
     # Trajectory plan for field scenario
-    trj_points_field = [[0,0,0], [0,0,1500], [0,0,1000]]           
+    trj_points_field = [[0,0,0], [0,0,1000], [0,0,1000]]           
     for x_point in range(3):
         for y_point in range(5):
             if (x_point % 2) == 0:
@@ -125,6 +129,7 @@ def get_vicon_data_update_pid():
     #trj_points = np.array(trj_points)
     #print(trj_points.shape)
     cool_trj = Trajectory(drone_origin,trj_points_field)
+    ref_data = trj_points_field[1,:]
 
     total_time = cool_trj.get_total_time()
     
@@ -149,7 +154,7 @@ def get_vicon_data_update_pid():
         #place drone with blue lights facing the control suite
         #create object in vicon 
         #start flying with blue lights facing the control suite 
-        RPYT_data = [-roll,pitch,-yaw,int(thrust)]
+        RPYT_data = [-roll,pitch,-yaw,int(hover_thrust + thrust)]
 
         time.sleep(1/900)
 

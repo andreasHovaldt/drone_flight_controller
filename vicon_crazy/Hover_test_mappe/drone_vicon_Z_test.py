@@ -13,14 +13,29 @@ def get_vicon_data_update_pid():
     global running, RPYT_data
 
 
+<<<<<<< Updated upstream:vicon_crazy/test_mappe/drone_vicon_Z_test.py
     pid_z = Pid_controller(55,5,10)
     #pid_z = Pid_controller(0.1,0,2.6)
+=======
+    RP_P = 60/1000
+    RP_I = 5/1000
+    RP_D = 45/1000
+            
+    pid_x = Pid_controller(RP_P,RP_I,RP_D)
+    pid_y = Pid_controller(RP_P,RP_I,RP_D)
+    pid_z = Pid_controller(100,25,15)
+    #pid_yaw = Pid_controller(1.4,0.3,1)
+
+    pid_yaw = Pid_controller(13,1,12)
+
+    
+>>>>>>> Stashed changes:vicon_crazy/Hover_test_mappe/drone_vicon_Z_test.py
 
     print('connecting to vicon')
     vicon = viconUDP()
     
     print('connected to vicon')
-    thrust_limiter = Saturator(60001, 10001)
+    thrust_limiter = Saturator(60001, 30001)
 
     # Find the start height, in the vicon system
     vicon_data_first_run = vicon.getTimestampedData()
@@ -34,6 +49,11 @@ def get_vicon_data_update_pid():
         # Fetch new data from vicon
         vicon_data = vicon.getTimestampedData()
 
+<<<<<<< Updated upstream:vicon_crazy/test_mappe/drone_vicon_Z_test.py
+=======
+        # Log the ref and the actual position
+        data_array_log.append([vicon_data[0], vicon_data[3], ref])
+>>>>>>> Stashed changes:vicon_crazy/Hover_test_mappe/drone_vicon_Z_test.py
 
         # Update error with the new data
         error = ref - vicon_data[3]
