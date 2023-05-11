@@ -16,7 +16,7 @@ class Trajectory:
 
         for start_point, end_point in zip(self.waypoints[0:], self.waypoints[1:]):
             distance =  math.sqrt(sum((end_point-start_point)**2))
-            section_time = distance*0.002+1
+            section_time = distance*1.02+1
             #print(f"start point{start_point}, end point {end_point} ,distance {math.sqrt(sum((end_point-start_point)**2))}")
             
 
@@ -66,15 +66,24 @@ class Trajectory:
         return sum(self.time_array)
 
 if __name__ == "__main__":
-    point_array = np.random.random((10,3))*1000
-    point_array[0,:] = [0,0,0]
+    import matplotlib.pyplot as plt
+    #point_array = np.random.random((10,3))*1000
+    point_array = np.array([[0,1,0], [1,0,0.5],[1,1,1]])
+    #point_array[0,:] = [0,0,0]
     print(point_array)
     my_trj = Trajectory(point_array)
-    time_space = np.arange(0,my_trj.cum_time[-1]+10, 0.1)
+    time_space = np.arange(0,my_trj.cum_time[-1], 0.001)
     trj_out = []
     for time in time_space:
         trj_out.append(my_trj.get_position(time))
     print(np.array(trj_out))
+    fig, ax = plt.subplots()
+
+    ax.plot(time_space, np.array(trj_out))
+    ax.legend(["x", "y", "z"])
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Distance")
+    plt.show()
 
     #print(my_trj.cum_time)
     #print(my_trj.time_array)
