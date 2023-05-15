@@ -7,6 +7,7 @@ from crazy_link import Crazyflie_link
 from cflib.utils import uri_helper
 from vicon_link import viconUDP
 
+from trajectory_generation import Trajectory
 
 
 def exit_program(trajectory_done: bool):
@@ -22,13 +23,13 @@ def exit_program(trajectory_done: bool):
     running = False
     time.sleep(0.1)
     np_vicon_data = np.array(data_array_log)
-    np.savetxt("settling_time_step_y10.txt", np.array(np_vicon_data))
+    np.savetxt("settling_time_trj10.txt", np.array(np_vicon_data))
     time.sleep(1)
     exit("Exiting program")
 
 
 def get_vicon_data_update_pid():
-    global running, RPYT_data, data_array_log, cool_trj, total_time, experimental, logging
+    global running, RPYT_data, data_array_log, cool_trj, total_time, experimental
 
     # RP_P = 25/1000
     # RP_I = 15/1000
@@ -76,31 +77,69 @@ def get_vicon_data_update_pid():
 
     # For use with trajectory (find start postition)
     vicon_data_first_run = vicon.getTimestampedData()
+    #print(f"vicon data {vicon_data}")
 
+    #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000],[0, 0, 1000], [0, 1000, 1000], [0, 1000, vicon_data_first_run[3]+1300]]
+    trj_points_summon = [  [0,     0, 0    ], 
+                        [0,     0, 1000],
+                        [0,     0, 1000],
+                        [0,     0, 1000],
+                        [0,     0, 1000],
+                        [0,     0, 1000],
+                        [0,     0, 1000],
+                        [0,     0, 1000],
+                        [0,     0, 1000],
+                        [0,     0, 1000],
+                        [0,     0, 1000],
+                         [1000, 0, 1000],
+                         [1000, 0, 1000],
+                         [1000, 0, 1000],
+                         [1000, 0, 1000],
+                         [1000, 0, 1000],
+                         [1000, 0, 1000],
+                         [1000, 0, 1000],
+                         [1000, 0, 1000],
+                         [1000, 0, 1000],
+                         [1000, 0, 1000],
+                          [1000,1000,1000],
+                          [1000,1000,1000],
+                          [1000,1000,1000],
+                          [1000,1000,1000],
+                          [1000,1000,1000],
+                          [1000,1000,1000],
+                          [1000,1000,1000],
+                          [1000,1000,1000],
+                          [1000,1000,1000],
+                          [1000,1000,1000],
+                           [1000,1000,2000],
+                           [1000,1000,2000],
+                           [1000,1000,2000],
+                           [1000,1000,2000],
+                           [1000,1000,2000],
+                           [1000,1000,2000],
+                           [1000,1000,2000],
+                           [1000,1000,2000],
+                           [1000,1000,2000],
+                           [1000,1000,2000],
+                            [0,0,300] ]
 
+    trj_points_field = np.array(trj_points_summon)
+ 
+    #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000], [0,0,vicon_data_first_run[3]+1000]]
+    
     drone_origin = np.array([vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]])
+    #trj_points = np.array(trj_points)
+    #print(trj_points.shape)
+    cool_trj = Trajectory(drone_origin,trj_points_field)
+    ref_data = trj_points_field[1,:]
 
-
-    total_time = 23
-    logging = False
-
+    total_time = cool_trj.get_total_time()
+    
     while running:
         vicon_data = vicon.getTimestampedData()
-
-        if vicon_data[0] > 20.0:
-            ref = [0,0,500]
-            logging = False
-        elif vicon_data[0] > 5.0:
-            logging = True
-            ref = [0,1000,500]
-        elif vicon_data[0] < 5.0:
-            ref = [0,0,500]
-
-
-
-        if logging:
-            data_array_log.append(vicon_data + ref)
-
+        ref = cool_trj.get_position(vicon_data[0])
+        
+        data_array_log.append(vicon_data + ref.tolist())
         error = ref - np.array(vicon_data[1:4])
 
         roll = pid_y.update(error[1],vicon_data[0])

@@ -54,7 +54,7 @@ def get_vicon_data_update_pid():
 
     pid_x = Pid_controller(RP_P,RP_I,RP_D)
     pid_y = Pid_controller(RP_P,RP_I,RP_D)
-    pid_z = Pid_controller(100,25,15)
+    pid_z = Pid_controller(100,25,13)
     #pid_yaw = Pid_controller(1.4,0.3,1)
 
     pid_yaw = Pid_controller(13,1,12)
