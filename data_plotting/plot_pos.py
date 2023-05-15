@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-data = np.loadtxt("settling_time_trj2.txt")
+data = np.loadtxt("stop_point_trj_data1.txt")
 
 print(f"trj shape {data.shape}")
 

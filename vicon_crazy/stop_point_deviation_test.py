@@ -23,8 +23,8 @@ def exit_program(trajectory_done: bool):
     running = False
     time.sleep(0.1)
     np_vicon_data = np.array(data_array_log)
-    np.savetxt("trj_data.txt", np.array(np_vicon_data))
-    np.savetxt("stop_point_deviations.txt", np.array(stop_point_position_array))
+    np.savetxt("stop_point_trj_data3.txt", np.array(np_vicon_data))
+    np.savetxt("stop_point_deviations3.txt", np.array(stop_point_position_array))
     time.sleep(1)
     exit("Exiting program")
 
@@ -50,12 +50,12 @@ def get_vicon_data_update_pid():
             RP_D = 45/1000
 
 
-
+    hover_thrust = 43308
 
 
     pid_x = Pid_controller(RP_P,RP_I,RP_D)
     pid_y = Pid_controller(RP_P,RP_I,RP_D)
-    pid_z = Pid_controller(100,25,15)
+    pid_z = Pid_controller(35,5,17)
     #pid_yaw = Pid_controller(1.4,0.3,1)
 
     pid_yaw = Pid_controller(13,1,12)
@@ -70,7 +70,7 @@ def get_vicon_data_update_pid():
         print('Connected to vicon')
 
     roll_pitch_limiter = Saturator(5, -5)
-    thrust_limiter = Saturator(64001, 10001)
+    thrust_limiter = Saturator(21001, -21001)
 
     # For use with trajectory (find start postition)
     vicon_data_first_run = vicon.getTimestampedData()
@@ -137,7 +137,7 @@ def get_vicon_data_update_pid():
         #place drone with blue lights facing the control suite
         #create object in vicon 
         #start flying with blue lights facing the control suite 
-        RPYT_data = [-roll,pitch,-yaw,int(thrust)]
+        RPYT_data = [-roll,pitch,-yaw,int(hover_thrust + thrust)]
 
         #code to check for stop point 
         if vicon_data[0] > stop_times[stop_point_index]:
