@@ -3,7 +3,7 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 
-data = np.loadtxt("hover_step_bad.txt")
+data = np.loadtxt("trj_data_hover_accu.txt")
 
 print(f"trj shape {data.shape}")
 

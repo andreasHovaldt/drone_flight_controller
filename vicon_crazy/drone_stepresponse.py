@@ -23,7 +23,7 @@ def exit_program(trajectory_done: bool):
     running = False
     time.sleep(0.1)
     np_vicon_data = np.array(data_array_log)
-    np.savetxt("trj_data.txt", np.array(np_vicon_data))
+    np.savetxt("trj_data_hover_accu9.txt", np.array(np_vicon_data))
     time.sleep(1)
     exit("Exiting program")
 
@@ -75,37 +75,38 @@ def get_vicon_data_update_pid():
     vicon_data_first_run = vicon.getTimestampedData()
     #print(f"vicon data {vicon_data}")
 
-   
-
-    trj_points_field = np.array(trj_points_field)
- 
     #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000], [0,0,vicon_data_first_run[3]+1000]]
     
     drone_origin = np.array([vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]])
     #trj_points = np.array(trj_points)
     #print(trj_points.shape)
-    cool_trj = Trajectory(drone_origin,trj_points_field)
-    ref_data = trj_points_field[1,:]
 
-    total_time = 15
-    logging = True
+    total_time = 31
+    logging = False
     while running:
         vicon_data = vicon.getTimestampedData()
         #ref = cool_trj.get_position(vicon_data[0])
 
         #following code is used for the 
-        if vicon_data[0] < 5:
-            ref = [0,0,1000]
-        elif vicon_data[0] >5:
-            ref = [1000,0,1000]
-        elif vicon_data[0] >10 :
+
+        if vicon_data[0] > 37.0:
+            ref = [0,0,500]
+        elif vicon_data[0] > 34.0:
+            ref = [0,0,700]
+        elif vicon_data[0] > 30.0:
+            ref = [0,0,900]
             logging = False
-        elif vicon_data[0] > 11:
-            ref = [1000,0,300]
+        elif vicon_data[0] > 10.0:
+            logging = True
+            ref = [0,0,1000]
+        elif vicon_data[0] < 10.0:
+            ref = [0,0,1000]
+
 
 
         if logging:
-            data_array_log.append(vicon_data + ref.tolist())
+            data_array_log.append(vicon_data + ref)
+        
         error = ref - np.array(vicon_data[1:4])
 
         roll = pid_y.update(error[1],vicon_data[0])
