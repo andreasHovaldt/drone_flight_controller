@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-data = np.loadtxt("stop_point_trj_data1.txt")
+data = np.loadtxt("stop_point_trj_data6.txt")
 
 print(f"trj shape {data.shape}")
 
@@ -27,6 +27,6 @@ ax = plt.figure().add_subplot(projection='3d')
 
 ax.plot(px, py, pz, label='pos curve')
 ax.plot(rx, ry, rz, label='ref curve')
-ax.legend("x", "y", "z")
+
 
 plt.show()

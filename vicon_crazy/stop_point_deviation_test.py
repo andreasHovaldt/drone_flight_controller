@@ -23,8 +23,8 @@ def exit_program(trajectory_done: bool):
     running = False
     time.sleep(0.1)
     np_vicon_data = np.array(data_array_log)
-    np.savetxt("stop_point_trj_data3.txt", np.array(np_vicon_data))
-    np.savetxt("stop_point_deviations3.txt", np.array(stop_point_position_array))
+    np.savetxt("stop_point_trj_data9_new.txt", np.array(np_vicon_data))
+    np.savetxt("stop_point_deviations9_new.txt", np.array(stop_point_position_array))
     time.sleep(1)
     exit("Exiting program")
 
