@@ -1,11 +1,11 @@
 import numpy as np
 import time
 from threading import Thread
-from vicon_crazy.control_blocks import Pid_controller, Saturator
+from control_blocks import Pid_controller, Saturator
 
 from crazy_link import Crazyflie_link
 from cflib.utils import uri_helper
-from vicon_crazy.vicon_link import viconUDP
+from vicon_link import viconUDP
 
 
 
@@ -37,7 +37,7 @@ def get_vicon_data_update_pid():
 
 
     # Define reference as the start height + 1000 mm
-    ref = 1000 + vicon_data_first_run[3]
+    ref = 500 + vicon_data_first_run[3]
 
 
     while running:

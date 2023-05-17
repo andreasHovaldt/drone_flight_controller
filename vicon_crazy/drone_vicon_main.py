@@ -76,16 +76,25 @@ def get_vicon_data_update_pid():
     #print(f"vicon data {vicon_data}")
 
     #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000],[0, 0, 1000], [0, 1000, 1000], [0, 1000, vicon_data_first_run[3]+1300]]
-    trj_points_summon = [  [0,     0, 0    ], 
-                    [0,     0, 1000], 
-                    [0,     0, 1000], 
-                    [931,1892, 1500], 
-                    [1450,  8, 500], 
-                    [-60,1280, 2000], 
-                    [1925,1221,700],
-                    [0,     0, 1000],
-                    [0,     0, 201]]
+    # trj_points_summon = [  [0,     0, 0    ], 
+    #                 [0,     0, 1000], 
+    #                 [0,     0, 1000], 
+    #                 [931,1892, 1500], 
+    #                 [1450,  8, 500], 
+    #                 [-60,1280, 2000], 
+    #                 [1925,1221,700],
+    #                 [0,     0, 1000],
+    #                 [0,     0, 201]]
     
+    trj_points_summon = [  [0, 0, 0    ], 
+                         [0,     0, 1000],
+                         [0,     0, 1000],
+                         [0,     0, 1000],
+                         [0,     0, 1000],
+                         [0,     0, 1000],
+                         [0,     0, 1000],
+                         [0,0,300]]
+
     # Trajectory plan for field scenario - no stop points
     # trj_points_field = [[0,0,0], [0,0,1500], [0,0,1000]]  # starting point  
     # # following for loops are used to generate the rest of the field points each representing
@@ -105,19 +114,19 @@ def get_vicon_data_update_pid():
     # trj_points_field.append([0,0,250])
 
     # Trajectory plan for field scenario
-    trj_points_field = [[0,0,0], [0,0,1500], [0,0,1000]]           
-    for x_point in range(3):
-        for y_point in range(5):
-            if (x_point % 2) == 0:
-                trj_points_field.append([x_point*500, y_point*500, 1000])
-                trj_points_field.append([x_point*500, y_point*500, 1000])
-            else:
-                trj_points_field.append([x_point*500, -y_point*500+2000, 1000])
-                trj_points_field.append([x_point*500, -y_point*500+2000, 1000])
-    trj_points_field.append([0,0,1000])
-    trj_points_field.append([0,0,250])
+    # trj_points_field = [[0,0,0], [0,0,1500], [0,0,1000]]           
+    # for x_point in range(3):
+    #     for y_point in range(5):
+    #         if (x_point % 2) == 0:
+    #             trj_points_field.append([x_point*500, y_point*500, 1000])
+    #             trj_points_field.append([x_point*500, y_point*500, 1000])
+    #         else:
+    #             trj_points_field.append([x_point*500, -y_point*500+2000, 1000])
+    #             trj_points_field.append([x_point*500, -y_point*500+2000, 1000])
+    # trj_points_field.append([0,0,1000])
+    # trj_points_field.append([0,0,250])
 
-    trj_points_field = np.array(trj_points_field)
+    trj_points_field = np.array(trj_points_summon)
  
     #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000], [0,0,vicon_data_first_run[3]+1000]]
     
