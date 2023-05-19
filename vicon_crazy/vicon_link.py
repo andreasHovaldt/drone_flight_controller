@@ -38,7 +38,7 @@ class viconUDP:
     
     def connection_test(self):
         '''Returns true if the connection is succesfully established. Returns false otherwise'''
-        if np.array(self.getTimestampedData()).shape == (7,):
+        if len(self.getTimestampedData()) == 7:
             return True
         else:
             return False

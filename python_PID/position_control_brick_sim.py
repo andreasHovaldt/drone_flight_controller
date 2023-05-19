@@ -10,7 +10,7 @@ time_step = 0.01
 #start values 
 
 
-point_array = np.random.random((20,3))
+point_array = np.random.random((5,3))
 point_array[0] = [0,0,0]
 position = point_array[0]
 acceleration = np.array([0,0,0]) 
@@ -48,7 +48,7 @@ ref_array = []
 pos_array = []
 
 
-for clock in np.arange(0,sim_time+100,time_step):
+for clock in np.arange(0,sim_time,time_step):
     ref = brick_ref_trj.get_position(clock)
 
 
@@ -72,11 +72,18 @@ for clock in np.arange(0,sim_time+100,time_step):
     pos_array.append(np.transpose(position))
 
 
+ref_array = np.array(ref_array)
+
+fig, axs = plt.subplots(3)
+axts = ["x", "y", "z"]
+
+for ax, axt, data_index in zip(axs, axts, range(3)):
+    ax.plot(time_array, ref_array[:,data_index])
+    ax.set_ylabel(f"{axt} position")
 
 
-
-plt.plot(time_array, ref_array)
-plt.plot(time_array, pos_array)
+axs[2].set_xlabel("Time [s]")
+#plt.plot(time_array, pos_array)
 
 plt.show()
 
@@ -96,7 +103,7 @@ rx = ref_array[:,0]
 
 ax = plt.figure().add_subplot(projection='3d')
 
-ax.plot(px, py, pz, label='pos curve')
+#ax.plot(px, py, pz, label='pos curve')
 ax.plot(rx, ry, rz, label='ref curve')
 ax.legend()
 
