@@ -21,7 +21,7 @@ def exit_program():
     running = False
     time.sleep(0.1)
     np_vicon_data = np.array(data_array_log)
-    np.savetxt("hover_step_gc4.txt", np.array(np_vicon_data))
+    np.savetxt("PID_8.137_4.747_3.099_2.txt", np.array(np_vicon_data))
     time.sleep(1)
     exit("Exiting program")
 
@@ -44,7 +44,7 @@ def get_vicon_data_update_pid():
 
     pid_x = Pid_controller(RP_P,RP_I,RP_D)
     pid_y = Pid_controller(RP_P,RP_I,RP_D)
-    pid_z = Pid_controller(20, 5, 10)
+    pid_z = Pid_controller(8.137,4.747,3.099)
     #pid_yaw = Pid_controller(1.4,0.3,1)
 
     pid_yaw = Pid_controller(13,1,12)
@@ -59,7 +59,7 @@ def get_vicon_data_update_pid():
         print('Connected to vicon')
 
     roll_pitch_limiter = Saturator(5, -5)
-    thrust_limiter = Saturator(21001, -20001)
+    thrust_limiter = Saturator(19001, -19001)
 
     
     # For use with trajectory (find start postition)
@@ -72,7 +72,7 @@ def get_vicon_data_update_pid():
     
     while running:
         vicon_data = vicon.getTimestampedData()
-        if vicon_data[0] < 10:
+        if vicon_data[0] < 30:
             ref = [drone_origin[0],drone_origin[1],drone_origin[2]+1000]
         else:
             ref = [drone_origin[0],drone_origin[1],drone_origin[2]+200]
