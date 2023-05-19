@@ -60,7 +60,8 @@ class Saturator():
         return input
 
 
-
+def newton_to_gram_thrust(thrust_newoton,motors_division = 4):
+    return (thrust_newoton*motors_division*1000)/9.82
 
     
 def thrust_to_command(input_thrust_grams):
