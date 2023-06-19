@@ -1,4 +1,4 @@
-# drone_flight_controller
+# X-Y-Z controller for a Crazyflie Drone using a Vicon Motion Lab
 Repository for coding a drone flight controller as our fourth semester project. Relevant files are located in the vicon_crazy folder.
 
 ## How-to
