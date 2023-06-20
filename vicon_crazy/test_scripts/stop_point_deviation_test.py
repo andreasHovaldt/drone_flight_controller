@@ -1,12 +1,3 @@
-#------------------------------------------------------------------------------------
-
-#place drone with blue lights facing the control suite
-#create object in vicon 
-#start flying with blue lights facing the control suite 
-
-#------------------------------------------------------------------------------------
-
-
 import numpy as np
 import time
 from threading import Thread
@@ -20,7 +11,7 @@ from trajectory_generation import Trajectory
 
 
 def exit_program(trajectory_done: bool):
-    global cf, running, data_array_log
+    global cf, running, data_array_log, stop_point_position_array
     if trajectory_done:
         print("Trajectory fulfilled")
     else:
@@ -32,13 +23,14 @@ def exit_program(trajectory_done: bool):
     running = False
     time.sleep(0.1)
     np_vicon_data = np.array(data_array_log)
-    np.savetxt("trj_data.txt", np.array(np_vicon_data))
+    #np.savetxt("stop_point_trj_data9_new.txt", np.array(np_vicon_data))
+    #np.savetxt("stop_point_deviations9_new.txt", np.array(stop_point_position_array))
     time.sleep(1)
     exit("Exiting program")
 
 
 def get_vicon_data_update_pid():
-    global running, RPYT_data, data_array_log, field_trj, total_time, experimental
+    global running, RPYT_data, data_array_log, cool_trj, total_time, experimental, stop_point_position_array
 
     # RP_P = 25/1000
     # RP_I = 15/1000
@@ -58,19 +50,15 @@ def get_vicon_data_update_pid():
             RP_D = 45/1000
 
 
-
+    hover_thrust = 43308
 
 
     pid_x = Pid_controller(RP_P,RP_I,RP_D)
     pid_y = Pid_controller(RP_P,RP_I,RP_D)
-    pid_z = Pid_controller(25,5,13)
+    pid_z = Pid_controller(35,5,17)
     #pid_yaw = Pid_controller(1.4,0.3,1)
 
     pid_yaw = Pid_controller(13,1,12)
-
-
-    # Hover thrust
-    hover_thrust = 43308
 
     print('connecting to vicon')
     vicon = viconUDP()
@@ -84,15 +72,20 @@ def get_vicon_data_update_pid():
     roll_pitch_limiter = Saturator(5, -5)
     thrust_limiter = Saturator(21001, -21001)
 
-
-    # Find start postition (For use with trajectory)
+    # For use with trajectory (find start postition)
     vicon_data_first_run = vicon.getTimestampedData()
-    drone_origin = np.array([vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]])
+    #print(f"vicon data {vicon_data}")
+
+    
+    # Trajectory plan for field scenario - no stop points
+    trj_points_field = [[0,0,0], [0,0,1500], [0,0,1000]]  # starting point  
+    # following for loops are used to generate the rest of the field points each representing
+    # how many points in x- directon and y-direction       
 
 
-    # Trajectory plan for field scenario
-    trj_points_field = [[0,0,0], [0,0,1000], [0,0,1000]]           
-    for x_point in range(3):
+    #Trajectory plan for field scenario
+    trj_points_field = [[0,0,0], [0,0,1500], [0,0,1000]]           
+    for x_point in range(5):
         for y_point in range(5):
             if (x_point % 2) == 0:
                 trj_points_field.append([x_point*500, y_point*500, 1000])
@@ -100,23 +93,32 @@ def get_vicon_data_update_pid():
             else:
                 trj_points_field.append([x_point*500, -y_point*500+2000, 1000])
                 trj_points_field.append([x_point*500, -y_point*500+2000, 1000])
-                
     trj_points_field.append([0,0,1000])
     trj_points_field.append([0,0,250])
+
     trj_points_field = np.array(trj_points_field)
  
-    # Create trajectory array for field observation
-    field_trj = Trajectory(drone_origin,trj_points_field)
+    #trj_points = [[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]],[vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]+1000], [0,0,vicon_data_first_run[3]+1000]]
     
-    # Old logging array
+    drone_origin = np.array([vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]])
+    #trj_points = np.array(trj_points)
+    #print(trj_points.shape)
+    cool_trj = Trajectory(drone_origin,trj_points_field)
+    
+    stop_times = np.cumsum(cool_trj.get_time_array())
+    stop_point_index = 0
+    stop_point_position_array = []
+
     ref_data = trj_points_field[1,:]
 
-    # 
-    total_time = field_trj.get_total_time()
+    total_time = cool_trj.get_total_time()
     
     while running:
+
         vicon_data = vicon.getTimestampedData()
-        ref = field_trj.get_position(vicon_data[0])
+
+
+        ref = cool_trj.get_position(vicon_data[0])
         
         data_array_log.append(vicon_data + ref.tolist())
         error = ref - np.array(vicon_data[1:4])
@@ -132,7 +134,15 @@ def get_vicon_data_update_pid():
         roll = roll_pitch_limiter.limit(roll)
         pitch = roll_pitch_limiter.limit(pitch)
         
+        #place drone with blue lights facing the control suite
+        #create object in vicon 
+        #start flying with blue lights facing the control suite 
         RPYT_data = [-roll,pitch,-yaw,int(hover_thrust + thrust)]
+
+        #code to check for stop point 
+        if vicon_data[0] > stop_times[stop_point_index]:
+            stop_point_index += 1
+            stop_point_position_array.append([vicon_data[0], error[0], error[1], error[2]])
 
         time.sleep(1/900)
 
@@ -171,14 +181,17 @@ def threads_vicon_crazy_start():
 
 if __name__ == "__main__":
 
-    # Initiate global variables
+    # Global variables
     running = True
     RPYT_data = [0,0,0,0]
     data_array_log = []
     ref_array = None
-    field_trj = None
-    total_time = None
+    cool_trj = None
+    total_time = 0.0
     experimental = False
+
+    #for test 
+    stop_point_position_array = []
 
     # uri for crazyflie drone
     uri = uri_helper.uri_from_env(default='radio://0/80/2M/E7E7E7E7E7')

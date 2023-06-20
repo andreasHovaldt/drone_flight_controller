@@ -1,12 +1,3 @@
-#------------------------------------------------------------------------------------
-
-#place drone with blue lights facing the control suite
-#create object in vicon 
-#start flying with blue lights facing the control suite 
-
-#------------------------------------------------------------------------------------
-
-
 import numpy as np
 import time
 from threading import Thread
@@ -16,7 +7,6 @@ from crazy_link import Crazyflie_link
 from cflib.utils import uri_helper
 from vicon_link import viconUDP
 
-from trajectory_generation import Trajectory
 
 
 def exit_program(trajectory_done: bool):
@@ -32,13 +22,13 @@ def exit_program(trajectory_done: bool):
     running = False
     time.sleep(0.1)
     np_vicon_data = np.array(data_array_log)
-    np.savetxt("trj_data.txt", np.array(np_vicon_data))
+    np.savetxt("settling_time_step_y10.txt", np.array(np_vicon_data))
     time.sleep(1)
     exit("Exiting program")
 
 
 def get_vicon_data_update_pid():
-    global running, RPYT_data, data_array_log, field_trj, total_time, experimental
+    global running, RPYT_data, data_array_log, cool_trj, total_time, experimental, logging
 
     # RP_P = 25/1000
     # RP_I = 15/1000
@@ -63,7 +53,7 @@ def get_vicon_data_update_pid():
 
     pid_x = Pid_controller(RP_P,RP_I,RP_D)
     pid_y = Pid_controller(RP_P,RP_I,RP_D)
-    pid_z = Pid_controller(25,5,13)
+    pid_z = Pid_controller(35,5,17)
     #pid_yaw = Pid_controller(1.4,0.3,1)
 
     pid_yaw = Pid_controller(13,1,12)
@@ -84,41 +74,33 @@ def get_vicon_data_update_pid():
     roll_pitch_limiter = Saturator(5, -5)
     thrust_limiter = Saturator(21001, -21001)
 
-
-    # Find start postition (For use with trajectory)
+    # For use with trajectory (find start postition)
     vicon_data_first_run = vicon.getTimestampedData()
+
+
     drone_origin = np.array([vicon_data_first_run[1],vicon_data_first_run[2],vicon_data_first_run[3]])
 
 
-    # Trajectory plan for field scenario
-    trj_points_field = [[0,0,0], [0,0,1000], [0,0,1000]]           
-    for x_point in range(3):
-        for y_point in range(5):
-            if (x_point % 2) == 0:
-                trj_points_field.append([x_point*500, y_point*500, 1000])
-                trj_points_field.append([x_point*500, y_point*500, 1000])
-            else:
-                trj_points_field.append([x_point*500, -y_point*500+2000, 1000])
-                trj_points_field.append([x_point*500, -y_point*500+2000, 1000])
-                
-    trj_points_field.append([0,0,1000])
-    trj_points_field.append([0,0,250])
-    trj_points_field = np.array(trj_points_field)
- 
-    # Create trajectory array for field observation
-    field_trj = Trajectory(drone_origin,trj_points_field)
-    
-    # Old logging array
-    ref_data = trj_points_field[1,:]
+    total_time = 23
+    logging = False
 
-    # 
-    total_time = field_trj.get_total_time()
-    
     while running:
         vicon_data = vicon.getTimestampedData()
-        ref = field_trj.get_position(vicon_data[0])
-        
-        data_array_log.append(vicon_data + ref.tolist())
+
+        if vicon_data[0] > 20.0:
+            ref = [0,0,500]
+            logging = False
+        elif vicon_data[0] > 5.0:
+            logging = True
+            ref = [0,1000,500]
+        elif vicon_data[0] < 5.0:
+            ref = [0,0,500]
+
+
+
+        if logging:
+            data_array_log.append(vicon_data + ref)
+
         error = ref - np.array(vicon_data[1:4])
 
         roll = pid_y.update(error[1],vicon_data[0])
@@ -132,6 +114,9 @@ def get_vicon_data_update_pid():
         roll = roll_pitch_limiter.limit(roll)
         pitch = roll_pitch_limiter.limit(pitch)
         
+        #place drone with blue lights facing the control suite
+        #create object in vicon 
+        #start flying with blue lights facing the control suite 
         RPYT_data = [-roll,pitch,-yaw,int(hover_thrust + thrust)]
 
         time.sleep(1/900)
@@ -171,13 +156,13 @@ def threads_vicon_crazy_start():
 
 if __name__ == "__main__":
 
-    # Initiate global variables
+    # Global variables
     running = True
     RPYT_data = [0,0,0,0]
     data_array_log = []
     ref_array = None
-    field_trj = None
-    total_time = None
+    cool_trj = None
+    total_time = 0.0
     experimental = False
 
     # uri for crazyflie drone

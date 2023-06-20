@@ -8,25 +8,36 @@ from cflib.utils import uri_helper
 from vicon_link import viconUDP
 
 
+
 def get_vicon_data_update_pid():
-    global running, RPYT_data
+    global running, RPYT_data, data_array_log
 
 
-    pid_z = Pid_controller(65,5,10)
-    #pid_z = Pid_controller(0.1,0,2.6)
+    RP_P = 60/1000
+    RP_I = 5/1000
+    RP_D = 45/1000
+            
+    pid_x = Pid_controller(RP_P,RP_I,RP_D)
+    pid_y = Pid_controller(RP_P,RP_I,RP_D)
+    pid_z = Pid_controller(100,25,15)
+    #pid_yaw = Pid_controller(1.4,0.3,1)
+
+    pid_yaw = Pid_controller(13,1,12)
+
+    
 
     print('connecting to vicon')
     vicon = viconUDP()
     
     print('connected to vicon')
-    thrust_limiter = Saturator(60001, 10001)
+    thrust_limiter = Saturator(60001, 30001)
 
     # Find the start height, in the vicon system
     vicon_data_first_run = vicon.getTimestampedData()
 
 
     # Define reference as the start height + 1000 mm
-    ref = 1000 + vicon_data_first_run[3]
+    ref = 500 + vicon_data_first_run[3]
 
 
     while running:
@@ -34,7 +45,7 @@ def get_vicon_data_update_pid():
         vicon_data = vicon.getTimestampedData()
 
         # Log the ref and the actual position
-        data_array_log.append([vicon_data[3], ref])
+        data_array_log.append([vicon_data[0], vicon_data[3], ref])
 
         # Update error with the new data
         error = ref - vicon_data[3]
@@ -111,13 +122,10 @@ if __name__ == "__main__":
         try: time.sleep(0.2)
         except KeyboardInterrupt:
             print("SHUTTING DOWN MOTORS - KEYBOARD INTERRUPT")
-            cf.send_setpoint([0,0,0,0])
+            cf.send_setpoint(0,0,0,0)
             time.sleep(0.1)
             cf.send_stop_setpoint()
             time.sleep(0.1)
             running = False
             time.sleep(0.1)
-            np_vicon_data = np.array(data_array_log)
-            np.savetxt("trj_data.txt", np.array(np_vicon_data))
-            time.sleep(1)
             exit("Exiting program")
