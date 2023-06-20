@@ -8,43 +8,43 @@ class Pid_controller():
         self.Kp = P
         self.Ki = I
         self.Kd = D
-
-        self.clear()
-
-    def clear(self):
-        # Clears the output and resets values.
+        
+        # Starting values
         self.i_part = 0.0
         self.previous_error = 0.0
         self.previous_time = 0.0
-        self.elapsed_time = 0.0
-
+        
+        
 
     def update(self, error, current_time):
         
-        # Calculate new time (this will be in seconds)
-        self.elapsed_time = current_time - self.previous_time
+        # Calculate time step (this will be in seconds, and it should be constant)
+        elapsed_time = current_time - self.previous_time
         
         # calculate the p_part
         p_part = error
 
         # Calculate the i_part
-        self.i_part = self.i_part + error * self.elapsed_time
+        self.i_part = self.i_part + error * elapsed_time
         
         # Calculate the d_part
-        d_part = (error - self.previous_error) / self.elapsed_time
+        d_part = (error - self.previous_error) / elapsed_time
 
         # Update previous_error and previous_time
         self.previous_error = error
         self.previous_time = current_time
 
+        # Return the individual parts multiplied by the corresponding coefficient.
         return self.Kp * p_part + self.Ki * self.i_part + self.Kd * d_part
         
 
 
 class Saturator():
-    '''Class used to ensure that the motors dont exceed a set max or min value
+    '''
+    Class used to ensure that the motors dont exceed a set max or min value
     this is used to ensre that the data send to the crazyflie control stack is consistent
-    with the documentation'''
+    with the documentation
+    '''
     def __init__(self, upper_limit, lower_limit):
         self.max = upper_limit
         self.min = lower_limit

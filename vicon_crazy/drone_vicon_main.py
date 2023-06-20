@@ -1,11 +1,10 @@
 #------------------------------------------------------------------------------------
 
-#place drone with blue lights facing the control suite
-#create object in vicon 
-#start flying with blue lights facing the control suite 
+# Place drone with blue lights facing the control suite
+# Create object in vicon 
+# Start flying with blue lights facing the control suite 
 
 #------------------------------------------------------------------------------------
-
 
 import numpy as np
 import time
@@ -38,18 +37,14 @@ def exit_program(trajectory_done: bool):
 
 
 def get_vicon_data_update_pid():
-    global running, RPYT_data, data_array_log, field_trj, total_time, experimental
-
-    # RP_P = 25/1000
-    # RP_I = 15/1000
-    # RP_D = 9.8/1000
+    global running, RPYT_data, data_array_log, field_trj, trj_time, experimental
 
     match experimental:
         case True:
-            # PID coefficients from theory
-            RP_P = 1.1/1000
-            RP_I = 0.051/1000
-            RP_D = 5.88/1000
+            # PID coefficients from theory (without unit conversion)
+            RP_P = 1.1
+            RP_I = 0.051
+            RP_D = 5.88
 
         case False:
             # PID coefficients from testing
@@ -58,31 +53,22 @@ def get_vicon_data_update_pid():
             RP_D = 45/1000
 
 
-
-
-
+    # Set PID values
     pid_x = Pid_controller(RP_P,RP_I,RP_D)
     pid_y = Pid_controller(RP_P,RP_I,RP_D)
     pid_z = Pid_controller(25,5,13)
-    #pid_yaw = Pid_controller(1.4,0.3,1)
-
     pid_yaw = Pid_controller(13,1,12)
 
 
     # Hover thrust
     hover_thrust = 43308
 
-    print('connecting to vicon')
+    print('Connecting to vicon')
     vicon = viconUDP()
 
-    # Test vicon connection
-    if vicon.connection_test() != True:
-        print('VICON TEST NOT PASSED!')
-    else:
-        print('Connected to vicon')
-
-    roll_pitch_limiter = Saturator(5, -5)
-    thrust_limiter = Saturator(21001, -21001)
+    # Make instance of saturators
+    roll_pitch_limiter = Saturator(5, -5) # degrees
+    thrust_limiter = Saturator(21001, -21001) # 16-bit integer - thrust command
 
 
     # Find start postition (For use with trajectory)
@@ -107,12 +93,9 @@ def get_vicon_data_update_pid():
  
     # Create trajectory array for field observation
     field_trj = Trajectory(drone_origin,trj_points_field)
-    
-    # Old logging array
-    ref_data = trj_points_field[1,:]
 
-    # 
-    total_time = field_trj.get_total_time()
+    # The total time for the calculated trajectory
+    trj_time = field_trj.get_trj_time()
     
     while running:
         vicon_data = vicon.getTimestampedData()
@@ -132,9 +115,10 @@ def get_vicon_data_update_pid():
         roll = roll_pitch_limiter.limit(roll)
         pitch = roll_pitch_limiter.limit(pitch)
         
+        # Update data which is sent to the Crazyflie in "send_RPYT()"
         RPYT_data = [-roll,pitch,-yaw,int(hover_thrust + thrust)]
 
-        time.sleep(1/900)
+        time.sleep(1/500)
 
 
 
@@ -148,12 +132,15 @@ def send_RPYT():
 
     while running:
         cf.send_setpoint(RPYT_data)
-        #print(RPYT_data)
-        # Find ud af hvorfor vi sover
-        time.sleep(1/900)
+
+        # Sleep to allow the other threads run
+        time.sleep(1/500)
 
 
 def threads_vicon_crazy_start():
+    '''
+    Starts two threads: Vicon and Crazyflie 
+    '''
     thread_cf = Thread(target=send_RPYT)
     thread_cf.start()
     print('cf thread started')
@@ -174,28 +161,31 @@ if __name__ == "__main__":
     # Initiate global variables
     running = True
     RPYT_data = [0,0,0,0]
-    data_array_log = []
-    ref_array = None
+    data_array_log = None
     field_trj = None
-    total_time = None
-    experimental = False
+    trj_time = None
+    experimental = False # Changes XY-PID coefficients between theory and tested coefficients (True = theory)
 
-    # uri for crazyflie drone
+    # Uniform Resource Identifier for crazyflie drone 
     uri = uri_helper.uri_from_env(default='radio://0/80/2M/E7E7E7E7E7')
+    # radio://<channel>/<address>/<datarate>/<custom_identifier>
 
+
+    # Establish connection to crazyflie
     cf = Crazyflie_link(uri)
     print('connected to crazyflie')
 
+    # Start threads
     threads_vicon_crazy_start()
 
     timer = time.time()
 
     # Exit program with KeyboardInterrupt, and stop the other threads
     print('Entering main while loop - Cancel with: ctrl + c')
-    while 1:
+    while True:
         try: 
             time.sleep(0.2)
-            if timer+total_time < time.time():
+            if timer+trj_time < time.time():
                 exit_program(1)
 
         except KeyboardInterrupt:
